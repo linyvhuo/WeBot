@@ -1,0 +1,42 @@
+<svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景渐变 -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#2196F3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#9C27B0;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="sGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#E3F2FD;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 主背景 -->
+  <rect width="64" height="64" rx="12" ry="12" fill="url(#bgGradient)" />
+  
+  <!-- 机器人/自动化元素 - 圆形头部 -->
+  <circle cx="42" cy="24" r="10" fill="#FFFFFF" opacity="0.9" />
+  
+  <!-- 机器人眼睛 -->
+  <circle cx="39" cy="22" r="1.5" fill="#2196F3" />
+  <circle cx="45" cy="22" r="1.5" fill="#2196F3" />
+  
+  <!-- 机器人天线 -->
+  <line x1="42" y1="14" x2="42" y2="18" stroke="#FFFFFF" stroke-width="1.5" stroke-linecap="round" />
+  <circle cx="42" cy="14" r="1.5" fill="#FFC107" />
+  
+  <!-- 机器人嘴巴/语音气泡 -->
+  <path d="M38 26 Q42 28 46 26 L46 28 Q42 30 38 28 Z" fill="#2196F3" />
+  
+  <!-- SLin的首字母S -->
+  <path d="M18 30 C18 25 22 22 26 22 C30 22 34 25 34 30 C34 35 30 38 26 38 C22 38 18 35 18 30 Z M22 30 C22 33 24 35 26 35 C28 35 30 33 30 30 C30 27 28 25 26 25 C24 25 22 27 22 30 Z" fill="url(#sGradient)" />
+  
+  <!-- 自动化波浪线 -->
+  <path d="M18 44 Q22 42 26 44 Q30 46 34 44" stroke="#FFFFFF" stroke-width="2" fill="none" stroke-linecap="round" />
+  
+  <!-- 底部装饰点 -->
+  <circle cx="22" cy="50" r="1" fill="#FFFFFF" opacity="0.7" />
+  <circle cx="26" cy="50" r="1" fill="#FFFFFF" opacity="0.7" />
+  <circle cx="30" cy="50" r="1" fill="#FFFFFF" opacity="0.7" />
+  <circle cx="34" cy="50" r="1" fill="#FFFFFF" opacity="0.7" />
+</svg>

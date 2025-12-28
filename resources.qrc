@@ -1,0 +1,10 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource prefix="/templates">
+        <!-- 标准分辨率模板 -->
+        <file>templates/MindSpark_logo.png</file>
+    </qresource>
+    <qresource prefix="/icons">
+        <file>icons/app_icon.svg</file>
+    </qresource>
+</RCC>
