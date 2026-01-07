@@ -5,7 +5,7 @@
 # Template: app
 #############################################################################
 
-MAKEFILE      = Makefile.Debug
+MAKEFILE      = Makefile.WeBot.Debug
 
 EQ            = =
 
@@ -122,13 +122,13 @@ DESTDIR_TARGET = debug\WeBot.exe
 ####### Build rules
 
 first: all
-all: Makefile.Debug  debug/WeBot.exe
+all: Makefile.WeBot.Debug  debug/WeBot.exe
 
 debug/WeBot.exe: F:/QT/6.5.3/mingw_64/lib/libQt6Widgets.a F:/QT/6.5.3/mingw_64/lib/libQt6Gui.a F:/QT/6.5.3/mingw_64/lib/libQt6Network.a F:/QT/6.5.3/mingw_64/lib/libQt6Core.a F:/QT/6.5.3/mingw_64/lib/libQt6EntryPoint.a ui_mainwindow.h $(OBJECTS) 
 	$(LINKER) $(LFLAGS) -o $(DESTDIR_TARGET) @debug\object_script.WeBot.Debug $(LIBS)
 
 qmake: FORCE
-	@$(QMAKE) -o Makefile.Debug WeBot.pro
+	@$(QMAKE) -o Makefile.WeBot.Debug WeBot.pro
 
 qmake_all: FORCE
 
@@ -141,7 +141,7 @@ clean: compiler_clean
 distclean: clean 
 	-$(DEL_FILE) .qmake.stash
 	-$(DEL_FILE) $(DESTDIR_TARGET)
-	-$(DEL_FILE) Makefile.Debug
+	-$(DEL_FILE) Makefile.WeBot.Debug
 
 mocclean: compiler_moc_header_clean compiler_moc_objc_header_clean compiler_moc_source_clean
 

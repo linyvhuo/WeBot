@@ -111,11 +111,6 @@ MainWindow::MainWindow(QWidget *parent)
         connect(automator, &Automator::automationCompleted, this, &MainWindow::onAutomationCompleted);
         connect(automator, &Automator::errorMessage, this, &MainWindow::showErrorMessage);
         
-        // 显示配置文件路径
-        QString configPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/WeBot/config.ini";
-        addLogEntry(QString("配置文件路径: %1").arg(configPath));
-        LOG_INFO(QString("配置文件路径: %1").arg(configPath));
-        
         // 连接标签页切换信号
         connect(ui->tabWidget, &QTabWidget::currentChanged, this, &MainWindow::onTabChanged);
 
@@ -378,12 +373,7 @@ MainWindow::~MainWindow() {
         automator->stop();
     }
     
-    // 清理鼠标计时器资源
-    if (mouseTimer) {
-        mouseTimer->stop();
-        delete mouseTimer;
-        mouseTimer = nullptr;
-    }
+
     
     // 关闭日志系统
     Logger::close();
@@ -441,11 +431,20 @@ bool MainWindow::loadConfigToUI() {
     ui->questionModeCombo->addItem("随机使用预设问题", 1); // Automator::RandomMode
     ui->questionModeCombo->addItem("自动生成问题", 2);   // Automator::GenerateMode
     ui->questionModeCombo->setCurrentIndex(config->getQuestionMode());
+    
+    // 加载输入方式设置
+    int inputMethod = config->getInputMethod();
+    if (inputMethod == 0) {
+        ui->keyboardInputRadio->setChecked(true);
+    } else {
+        ui->pasteInputRadio->setChecked(true);
+    }
 
     // 初始化图标管理界面
     // 确保图标名称下拉框有正确的选项
     QStringList iconOptions = {
         "workbench - 工作台图标",
+        "mindspark_small - MindSpark标题栏图标",
         "mindspark - MindSpark图标",
         "input_box - 输入框图标",
         "send_button - 发送按钮图标",
@@ -459,6 +458,9 @@ bool MainWindow::loadConfigToUI() {
     // 初始化图标管理界面
     on_iconNameCombo_currentIndexChanged(ui->iconNameCombo->currentIndex());
 
+    // 更新进度条，使用配置文件中的循环次数作为总数
+    updateProgress(0, ui->loopCountSpin->value());
+    
     addLogEntry("配置已加载到界面");
     return true;
     } catch (const std::exception& e) {
@@ -495,6 +497,10 @@ bool MainWindow::saveConfigFromUI() {
         
         // 保存问题模式设置
         config->setQuestionMode(ui->questionModeCombo->currentIndex());
+        
+        // 保存输入方式设置
+        int inputMethod = ui->keyboardInputRadio->isChecked() ? 0 : 1;
+        config->setInputMethod(inputMethod);
 
         // 保存高级设置
         config->setImageRecognitionThreshold(ui->thresholdSpin->value());
@@ -544,6 +550,9 @@ bool MainWindow::saveConfigFromUI() {
         // 重新加载配置到UI，确保显示的是最新值
         loadConfigToUI();
         
+        // 更新进度条，使用配置文件中的循环次数作为总数
+        updateProgress(0, ui->loopCountSpin->value());
+        
         return true;
     } catch (const std::exception& e) {
         QMessageBox::critical(this, "错误", QString("保存配置时发生异常: %1").arg(e.what()));
@@ -560,7 +569,6 @@ void MainWindow::updateUIState(bool isRunning) {
     // 根据运行状态更新UI控件的可用性
     ui->startButton->setEnabled(!isRunning);
     ui->stopButton->setEnabled(true); // 停止按钮始终可用
-
     ui->wechatPathEdit->setEnabled(!isRunning);
     ui->browseWechatButton->setEnabled(!isRunning);
     ui->loopCountSpin->setEnabled(!isRunning);
@@ -605,14 +613,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Escape) {
         if (automator->getCurrentState() == Automator::Running) {
             addLogEntry("检测到ESC按键，停止自动化");
-            automator->stop();
-            
-            // 停止并删除mouseTimer
-            if (mouseTimer) {
-                mouseTimer->stop();
-                delete mouseTimer;
-                mouseTimer = nullptr;
-            }
+            automator->stop();           
         }
     }
     
@@ -650,31 +651,10 @@ void MainWindow::on_startButton_clicked() {
         LOG_INFO(QString("开始自动问答，共 %1 次").arg(count));
         addLogEntry(QString("开始自动问答，共 %1 次").arg(count));
         
-        // 确保只有一个mouseTimer实例，仅用于记录鼠标位置，不再用于停止自动化
-        if (mouseTimer) {
-            delete mouseTimer;
-            mouseTimer = nullptr;
-        }
-        
-        // 启动鼠标位置记录
-        mouseTimer = new QTimer(this);
-        connect(mouseTimer, &QTimer::timeout, this, [this]() {
-            // 简化鼠标位置记录，不再需要比较鼠标位置来停止自动化
-            POINT point;
-            if (GetCursorPos(&point)) {
-                // 仅记录位置，不做任何处理
-                QPoint currentPos(point.x, point.y);
-            }
-        });
-        mouseTimer->start(500); // 每500毫秒更新一次鼠标位置
-        
         if (!automator->start(count)) {
             LOG_ERROR("自动问答启动失败");
             // 移除不必要的警告提示
             updateUIState(false);
-            mouseTimer->stop(); // 启动失败，停止鼠标位置记录
-            delete mouseTimer;
-            mouseTimer = nullptr;
             return;
         }
         
@@ -698,17 +678,7 @@ void MainWindow::on_startButton_clicked() {
 void MainWindow::on_stopButton_clicked() {
     try {
         // 停止自动化
-        addLogEntry("正在停止自动问答...");
-        
-        // 立即停止所有鼠标相关操作
-        if (mouseTimer) {
-            mouseTimer->stop();
-            delete mouseTimer;
-            mouseTimer = nullptr;
-        }
-        
-
-        
+        addLogEntry("正在停止自动问答...");      
         // 调用automator->stop()停止自动化
         automator->stop();
         
@@ -811,16 +781,9 @@ void MainWindow::onAutomationCompleted() {
     // 自动化完成
     updateUIState(false);
     
-    // 停止并删除鼠标位置记录计时器
-    if (mouseTimer) {
-        mouseTimer->stop();
-        delete mouseTimer;
-        mouseTimer = nullptr;
-    }
-    
     addLogEntry("自动问答已完成");
     // 移除模态对话框，避免导致崩溃
-    // QMessageBox::information(this, "完成", "自动问答已完成");
+    QMessageBox::information(this, "完成", "自动问答已完成");
 }
 
 void MainWindow::on_browseQuestionsButton_clicked() {
@@ -844,7 +807,7 @@ void MainWindow::on_browseQuestionsButton_clicked() {
             QFile file(path);
             if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
                 QTextStream in(&file);
-                int maxLines = 50; // 最多显示50行
+                int maxLines = 200; // 最多显示50行
                 int lineCount = 0;
                 
                 while (!in.atEnd() && lineCount < maxLines) {
@@ -1000,6 +963,12 @@ void MainWindow::on_recognitionTechniqueCombo_currentIndexChanged(int index) {
 void MainWindow::on_timeoutSpin_valueChanged(int value) {
     // 回答超时时间变化
     addLogEntry(QString("回答超时时间已更改为: %1 秒").arg(value));
+}
+
+void MainWindow::on_loopCountSpin_valueChanged(int value) {
+    // 循环次数变化时更新进度条的最大值
+    updateProgress(0, value);
+    addLogEntry(QString("循环次数已更改为: %1").arg(value));
 }
 
 void MainWindow::on_saveAdvancedConfigButton_clicked() {
@@ -1158,38 +1127,8 @@ void MainWindow::updateIconPreview(const QString &path, QLabel *previewLabel) {
     QPixmap pixmap;
     bool loaded = false;
     
-    // 检查是否为SVG文件
-    if (path.endsWith(".svg", Qt::CaseInsensitive)) {
-        // 处理SVG文件，支持资源路径和普通文件路径
-        QByteArray svgData;
-        bool dataLoaded = false;
-        
-        if (path.startsWith(":/")) {
-            // 资源路径，使用QFile加载（Qt资源系统会自动处理）
-            QFile file(path);
-            if (file.open(QIODevice::ReadOnly)) {
-                svgData = file.readAll();
-                file.close();
-                dataLoaded = true;
-            }
-        } else {
-            // 普通文件路径，使用QFile加载
-            QFile file(path);
-            if (file.open(QIODevice::ReadOnly)) {
-                svgData = file.readAll();
-                file.close();
-                dataLoaded = true;
-            }
-        }
-        
-        if (dataLoaded) {
-            // 直接使用QPixmap加载SVG数据
-            loaded = pixmap.loadFromData(svgData, "SVG");
-        }
-    } else {
-        // 处理其他图像格式
-        loaded = pixmap.load(path);
-    }
+    // 处理其他图像格式
+    loaded = pixmap.load(path);
     
     if (loaded) {
         // 调整图像大小以适应预览区域
@@ -1239,6 +1178,25 @@ void MainWindow::onTabChanged(int index) {
 void MainWindow::showErrorMessage(const QString &message) {
     // 显示错误弹窗
     QMessageBox::critical(this, "自动化错误", message);
+}
+
+// 输入方式相关方法实现
+MainWindow::InputMethod MainWindow::getCurrentInputMethod() const {
+    ConfigManager* config = ConfigManager::getInstance();
+    int method = config->getInputMethod();
+    return (method == 0) ? KeyboardInput : PasteInput;
+}
+
+void MainWindow::setCurrentInputMethod(InputMethod method) {
+    ConfigManager* config = ConfigManager::getInstance();
+    config->setInputMethod(method == KeyboardInput ? 0 : 1);
+    
+    // 更新UI
+    if (method == KeyboardInput) {
+        ui->keyboardInputRadio->setChecked(true);
+    } else {
+        ui->pasteInputRadio->setChecked(true);
+    }
 }
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event) {

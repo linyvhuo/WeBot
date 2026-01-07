@@ -227,16 +227,10 @@ void Logger::setLogPath(const QString &path)
         instance->logStream = new QTextStream(instance->logFile);
         instance->logStream->setEncoding(QStringConverter::Utf8); // 设置UTF-8编码
         
-        // 将旧日志内容写入新文件（如果有）
-        if (!oldLogContent.isEmpty()) {
-            *instance->logStream << oldLogContent;
-            instance->logStream->flush();
-        } else {
-            // 如果是第一次创建日志文件，写入初始化日志
-            LogEntry entry(Info, "Logger initialized", __FUNCTION__, __LINE__);
-            writeLog(entry);
-            qDebug() << "Logger初始化完成，日志文件:" << logFileName;
-        }
+        // 无论何时创建新日志文件，都写入全新的初始化日志
+        LogEntry entry(Info, "Logger initialized", __FUNCTION__, __LINE__);
+        writeLog(entry);
+        qDebug() << "Logger初始化完成，日志文件:" << logFileName;
     } else {
         qDebug() << "日志文件打开失败:" << logFileName << "错误:" << instance->logFile->errorString();
     }
@@ -473,8 +467,8 @@ void Logger::checkLogRotation()
 
 QString Logger::generateLogFileName() const
 {
-    // 生成只包含日期的日志文件名，确保程序每次启动只创建一个日志文件
-    QString date = QDateTime::currentDateTime().toString("yyyyMMdd");
-    QString fileName = QString("webot_%1.log").arg(date);
+    // 生成包含日期和时间的日志文件名，确保程序每次启动都会创建一个新的日志文件
+    QString datetime = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss_zzz");
+    QString fileName = QString("webot_%1.log").arg(datetime);
     return QDir(logPath).absoluteFilePath(fileName);
 }

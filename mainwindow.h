@@ -34,10 +34,17 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    QString getLogContent();
+    // 输入方式枚举
+    enum InputMethod {
+        KeyboardInput,  // 模拟键盘逐个输入
+        PasteInput      // 复制粘贴输入
+    };
     
-    // 事件过滤器，用于拦截样式表解析错误
-    bool eventFilter(QObject *obj, QEvent *event);
+    // 获取当前输入方式
+    InputMethod getCurrentInputMethod() const;
+    
+    // 设置当前输入方式
+    void setCurrentInputMethod(InputMethod method);
 
 private slots:
         void on_startButton_clicked();
@@ -57,6 +64,7 @@ private slots:
         void on_recognitionTimeoutSpin_valueChanged(int value);
         void on_recognitionTechniqueCombo_currentIndexChanged(int index);
         void on_timeoutSpin_valueChanged(int value);
+        void on_loopCountSpin_valueChanged(int value);
         void on_multiMonitorCheck_toggled(bool checked);
         void on_primaryMonitorSpin_valueChanged(int value);
 
@@ -87,12 +95,17 @@ private slots:
 protected:
     // 重写键盘事件处理函数，用于处理ESC按键
     void keyPressEvent(QKeyEvent *event) override;
+    // 重写事件过滤器
+    bool eventFilter(QObject *obj, QEvent *event) override;
+    
+public:
+    // 获取日志内容
+    QString getLogContent();
 
 private:
     Ui::MainWindow *ui;
     Automator *automator = nullptr;
     RecognitionOverlay *recognitionOverlay = nullptr;
-    QTimer *mouseTimer = nullptr;
     
 
 

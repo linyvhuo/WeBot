@@ -71,10 +71,11 @@ void ConfigManager::initDefaultConfig()
     m_multiMonitorSupport = false;
     m_primaryMonitorIndex = 0;
 
-    // 路径配置，日志路径使用用户指定的D盘路径
-    logPath = "D:/OneDrive - linl/文档/WeBot/Logs/";
-    questionLibraryPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/WeBot/Questions.txt";
-    keywordLibraryPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/WeBot/Keywords.txt";
+    // 路径配置，统一放在项目路径下
+    QString projectPath = QCoreApplication::applicationDirPath();
+    logPath = projectPath + "/logs/";
+    questionLibraryPath = projectPath + "/Questions.txt";
+    keywordLibraryPath = projectPath + "/Keywords.txt";
     
     // 确保日志目录存在
     QDir logDir(logPath);
@@ -87,6 +88,7 @@ void ConfigManager::initDefaultConfig()
     iconPaths["input_box"] = templatePath + "输入框.png";
     iconPaths["workbench"] = templatePath + "工作台.png";
     iconPaths["mindspark"] = templatePath + "MindSpark_logo.png";
+    iconPaths["mindspark_small"] = templatePath + "MindSpark_logo.png";
     iconPaths["history_dialog"] = templatePath + "history_dialog.png";
     
     // 图像识别开关默认值
@@ -95,6 +97,9 @@ void ConfigManager::initDefaultConfig()
     // 鼠标移动检测设置默认值
     m_mouseMovementStopAutomation = true;
     m_mouseInactivityTimeout = 30; // 30秒
+    
+    // 输入方式默认值
+    inputMethod = 0; // 0表示键盘输入，1表示复制粘贴输入
 
     // 新配置项默认值
     mouseClickDelay = 100; // 100毫秒
@@ -113,7 +118,8 @@ void ConfigManager::initDefaultConfig()
 bool ConfigManager::loadConfig()
 {
     try {
-        QString configPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/WeBot/config.ini";
+        QString projectPath = QCoreApplication::applicationDirPath();
+        QString configPath = projectPath + "/config.ini";
         
         if (!QFile::exists(configPath)) {
             // 配置文件不存在，保存默认配置
@@ -191,6 +197,9 @@ bool ConfigManager::loadConfig()
         m_mouseMovementStopAutomation = settings.value("Advanced/MouseMovementStopAutomation", m_mouseMovementStopAutomation).toBool();
         m_mouseInactivityTimeout = settings.value("Advanced/MouseInactivityTimeout", m_mouseInactivityTimeout).toInt();
         
+        // 读取输入方式设置
+        inputMethod = settings.value("Advanced/InputMethod", inputMethod).toInt();
+        
         if (settings.status() != QSettings::NoError) {
             qDebug() << "加载配置时发生错误";
             emit logMessage("加载配置时发生错误");
@@ -213,7 +222,8 @@ bool ConfigManager::loadConfig()
 bool ConfigManager::saveConfig()
 {
     try {
-        QString configPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/WeBot/config.ini";
+        QString projectPath = QCoreApplication::applicationDirPath();
+        QString configPath = projectPath + "/config.ini";
         
         // 确保目录存在
         QDir dir;
@@ -285,6 +295,9 @@ bool ConfigManager::saveConfig()
         // 写入鼠标移动检测设置
         settings.setValue("Advanced/MouseMovementStopAutomation", m_mouseMovementStopAutomation);
         settings.setValue("Advanced/MouseInactivityTimeout", m_mouseInactivityTimeout);
+        
+        // 写入输入方式设置
+        settings.setValue("Advanced/InputMethod", inputMethod);
         
         // 同步设置到文件
         settings.sync();
@@ -881,5 +894,15 @@ bool ConfigManager::getDebugMode() const {
 
 void ConfigManager::setDebugMode(bool debugMode) {
     this->debugMode = debugMode;
+    emit configChanged();
+}
+
+// 输入方式的getter和setter方法
+int ConfigManager::getInputMethod() const {
+    return inputMethod;
+}
+
+void ConfigManager::setInputMethod(int method) {
+    inputMethod = method;
     emit configChanged();
 }

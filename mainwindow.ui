@@ -228,7 +228,7 @@ QPushButton:pressed { background-color: #455A64; transform: translateY(1px); }</
            <item row="0" column="3">
             <widget class="QSpinBox" name="timeoutSpin">
              <property name="minimum">
-              <number>5</number>
+              <number>1</number>
              </property>
              <property name="maximum">
               <number>300</number>
@@ -262,6 +262,49 @@ QPushButton:pressed { background-color: #455A64; transform: translateY(1px); }</
              <property name="alignment">
               <set>Qt::AlignCenter</set>
              </property>
+            </widget>
+           </item>
+           <item row="3" column="0" colspan="4">
+            <widget class="QGroupBox" name="inputMethodGroup">
+             <property name="title">
+              <string>输入方式设置</string>
+             </property>
+             <layout class="QVBoxLayout" name="inputMethodLayout">
+              <item>
+               <layout class="QHBoxLayout" name="inputMethodButtons">
+                <item>
+                 <widget class="QRadioButton" name="keyboardInputRadio">
+                  <property name="text">
+                   <string>模拟键盘逐个输入</string>
+                  </property>
+                  <property name="checked">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QRadioButton" name="pasteInputRadio">
+                  <property name="text">
+                   <string>复制粘贴输入</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <widget class="QLabel" name="inputMethodHintLabel">
+                <property name="styleSheet">
+                 <string notr="true">font-size: 9pt; color: #666666; font-style: italic;</string>
+                </property>
+                <property name="text">
+                 <string>💡 提示：模拟键盘输入更接近真实操作，复制粘贴输入速度更快</string>
+                </property>
+                <property name="wordWrap">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </widget>
            </item>
           </layout>
@@ -699,6 +742,16 @@ QPushButton:pressed { background-color: #455A64; transform: translateY(1px); }</
              </item>
              <item>
               <property name="text">
+               <string>mindspark_small - MindSpark小图标</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>mindspark_large - MindSpark大图标</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
                <string>input_box - 输入框图标</string>
               </property>
              </item>
@@ -715,6 +768,16 @@ QPushButton:pressed { background-color: #455A64; transform: translateY(1px); }</
              <item>
               <property name="text">
                <string>send_button - 发送按钮图标</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>send_button_small - 发送按钮小图标</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>send_button_large - 发送按钮大图标</string>
               </property>
              </item>
              <item>

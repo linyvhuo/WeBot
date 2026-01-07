@@ -225,10 +225,12 @@ public:
     // 鼠标移动检测设置
     bool getMouseMovementStopAutomation() const;
     void setMouseMovementStopAutomation(bool enabled);
-    
-    // 鼠标无操作继续时间（秒）
     int getMouseInactivityTimeout() const;
     void setMouseInactivityTimeout(int timeout);
+    
+    // 输入方式设置
+    int getInputMethod() const;
+    void setInputMethod(int method);
 
 signals:
     void logMessage(const QString &message);
@@ -325,6 +327,9 @@ private:
     // 鼠标移动检测设置
     bool m_mouseMovementStopAutomation;
     int m_mouseInactivityTimeout;
+    
+    // 输入方式设置
+    int inputMethod;
 
     QString configFilePath;
     QSettings *settings;

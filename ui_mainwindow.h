@@ -24,6 +24,7 @@
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QProgressBar>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QRadioButton>
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QSpinBox>
 #include <QtWidgets/QStatusBar>
@@ -69,6 +70,12 @@ public:
     QSpinBox *timeoutSpin;
     QSpinBox *loopCountSpin;
     QLabel *stopAutomationLabel;
+    QGroupBox *inputMethodGroup;
+    QVBoxLayout *inputMethodLayout;
+    QHBoxLayout *inputMethodButtons;
+    QRadioButton *keyboardInputRadio;
+    QRadioButton *pasteInputRadio;
+    QLabel *inputMethodHintLabel;
     QHBoxLayout *buttonLayout;
     QPushButton *startButton;
     QPushButton *stopButton;
@@ -301,7 +308,7 @@ public:
 
         timeoutSpin = new QSpinBox(automationGroup);
         timeoutSpin->setObjectName("timeoutSpin");
-        timeoutSpin->setMinimum(5);
+        timeoutSpin->setMinimum(1);
         timeoutSpin->setMaximum(300);
         timeoutSpin->setValue(30);
 
@@ -321,6 +328,36 @@ public:
         stopAutomationLabel->setAlignment(Qt::AlignCenter);
 
         automationLayout->addWidget(stopAutomationLabel, 2, 2, 1, 1);
+
+        inputMethodGroup = new QGroupBox(automationGroup);
+        inputMethodGroup->setObjectName("inputMethodGroup");
+        inputMethodLayout = new QVBoxLayout(inputMethodGroup);
+        inputMethodLayout->setObjectName("inputMethodLayout");
+        inputMethodButtons = new QHBoxLayout();
+        inputMethodButtons->setObjectName("inputMethodButtons");
+        keyboardInputRadio = new QRadioButton(inputMethodGroup);
+        keyboardInputRadio->setObjectName("keyboardInputRadio");
+        keyboardInputRadio->setChecked(true);
+
+        inputMethodButtons->addWidget(keyboardInputRadio);
+
+        pasteInputRadio = new QRadioButton(inputMethodGroup);
+        pasteInputRadio->setObjectName("pasteInputRadio");
+
+        inputMethodButtons->addWidget(pasteInputRadio);
+
+
+        inputMethodLayout->addLayout(inputMethodButtons);
+
+        inputMethodHintLabel = new QLabel(inputMethodGroup);
+        inputMethodHintLabel->setObjectName("inputMethodHintLabel");
+        inputMethodHintLabel->setStyleSheet(QString::fromUtf8("font-size: 9pt; color: #666666; font-style: italic;"));
+        inputMethodHintLabel->setWordWrap(true);
+
+        inputMethodLayout->addWidget(inputMethodHintLabel);
+
+
+        automationLayout->addWidget(inputMethodGroup, 3, 0, 1, 4);
 
 
         basicLayout->addWidget(automationGroup);
@@ -539,6 +576,10 @@ public:
         iconGridLayout->addWidget(iconNameLabel, 0, 0, 1, 1);
 
         iconNameCombo = new QComboBox(iconGroup);
+        iconNameCombo->addItem(QString());
+        iconNameCombo->addItem(QString());
+        iconNameCombo->addItem(QString());
+        iconNameCombo->addItem(QString());
         iconNameCombo->addItem(QString());
         iconNameCombo->addItem(QString());
         iconNameCombo->addItem(QString());
@@ -849,6 +890,10 @@ public:
         loopCountLabel->setText(QCoreApplication::translate("MainWindow", "\346\211\247\350\241\214\346\254\241\346\225\260:", nullptr));
         timeoutLabel->setText(QCoreApplication::translate("MainWindow", "\345\233\236\347\255\224\350\266\205\346\227\266(\347\247\222):", nullptr));
         stopAutomationLabel->setText(QCoreApplication::translate("MainWindow", "\360\237\222\241 \346\217\220\347\244\272\357\274\232\346\214\211\344\270\213ESC\346\214\211\351\224\256\345\217\257\351\232\217\346\227\266\345\201\234\346\255\242\350\207\252\345\212\250\345\214\226\346\211\247\350\241\214", nullptr));
+        inputMethodGroup->setTitle(QCoreApplication::translate("MainWindow", "\350\276\223\345\205\245\346\226\271\345\274\217\350\256\276\347\275\256", nullptr));
+        keyboardInputRadio->setText(QCoreApplication::translate("MainWindow", "\346\250\241\346\213\237\351\224\256\347\233\230\351\200\220\344\270\252\350\276\223\345\205\245", nullptr));
+        pasteInputRadio->setText(QCoreApplication::translate("MainWindow", "\345\244\215\345\210\266\347\262\230\350\264\264\350\276\223\345\205\245", nullptr));
+        inputMethodHintLabel->setText(QCoreApplication::translate("MainWindow", "\360\237\222\241 \346\217\220\347\244\272\357\274\232\346\250\241\346\213\237\351\224\256\347\233\230\350\276\223\345\205\245\346\233\264\346\216\245\350\277\221\347\234\237\345\256\236\346\223\215\344\275\234\357\274\214\345\244\215\345\210\266\347\262\230\350\264\264\350\276\223\345\205\245\351\200\237\345\272\246\346\233\264\345\277\253", nullptr));
         startButton->setText(QCoreApplication::translate("MainWindow", "\360\237\232\200 \345\274\200\345\247\213\350\207\252\345\212\250\351\227\256\347\255\224", nullptr));
         stopButton->setText(QCoreApplication::translate("MainWindow", "\342\217\271\357\270\217 \345\201\234\346\255\242\346\211\247\350\241\214", nullptr));
 #if QT_CONFIG(tooltip)
@@ -925,13 +970,17 @@ public:
         iconNameLabel->setText(QCoreApplication::translate("MainWindow", "\345\233\276\346\240\207\345\220\215\347\247\260:", nullptr));
         iconNameCombo->setItemText(0, QCoreApplication::translate("MainWindow", "workbench - \345\267\245\344\275\234\345\217\260\345\233\276\346\240\207", nullptr));
         iconNameCombo->setItemText(1, QCoreApplication::translate("MainWindow", "mindspark - MindSpark\345\233\276\346\240\207", nullptr));
-        iconNameCombo->setItemText(2, QCoreApplication::translate("MainWindow", "input_box - \350\276\223\345\205\245\346\241\206\345\233\276\346\240\207", nullptr));
-        iconNameCombo->setItemText(3, QCoreApplication::translate("MainWindow", "input_box_small - \345\260\217\345\260\272\345\257\270\350\276\223\345\205\245\346\241\206\345\233\276\346\240\207", nullptr));
-        iconNameCombo->setItemText(4, QCoreApplication::translate("MainWindow", "input_box_large - \345\244\247\345\260\272\345\257\270\350\276\223\345\205\245\346\241\206\345\233\276\346\240\207", nullptr));
-        iconNameCombo->setItemText(5, QCoreApplication::translate("MainWindow", "send_button - \345\217\221\351\200\201\346\214\211\351\222\256\345\233\276\346\240\207", nullptr));
-        iconNameCombo->setItemText(6, QCoreApplication::translate("MainWindow", "history_dialog - \345\216\206\345\217\262\345\257\271\350\257\235\345\233\276\346\240\207", nullptr));
-        iconNameCombo->setItemText(7, QCoreApplication::translate("MainWindow", "history_dialog_small - \345\260\217\345\260\272\345\257\270\345\216\206\345\217\262\345\257\271\350\257\235\345\233\276\346\240\207", nullptr));
-        iconNameCombo->setItemText(8, QCoreApplication::translate("MainWindow", "history_dialog_large - \345\244\247\345\260\272\345\257\270\345\216\206\345\217\262\345\257\271\350\257\235\345\233\276\346\240\207", nullptr));
+        iconNameCombo->setItemText(2, QCoreApplication::translate("MainWindow", "mindspark_small - MindSpark\345\260\217\345\233\276\346\240\207", nullptr));
+        iconNameCombo->setItemText(3, QCoreApplication::translate("MainWindow", "mindspark_large - MindSpark\345\244\247\345\233\276\346\240\207", nullptr));
+        iconNameCombo->setItemText(4, QCoreApplication::translate("MainWindow", "input_box - \350\276\223\345\205\245\346\241\206\345\233\276\346\240\207", nullptr));
+        iconNameCombo->setItemText(5, QCoreApplication::translate("MainWindow", "input_box_small - \345\260\217\345\260\272\345\257\270\350\276\223\345\205\245\346\241\206\345\233\276\346\240\207", nullptr));
+        iconNameCombo->setItemText(6, QCoreApplication::translate("MainWindow", "input_box_large - \345\244\247\345\260\272\345\257\270\350\276\223\345\205\245\346\241\206\345\233\276\346\240\207", nullptr));
+        iconNameCombo->setItemText(7, QCoreApplication::translate("MainWindow", "send_button - \345\217\221\351\200\201\346\214\211\351\222\256\345\233\276\346\240\207", nullptr));
+        iconNameCombo->setItemText(8, QCoreApplication::translate("MainWindow", "send_button_small - \345\217\221\351\200\201\346\214\211\351\222\256\345\260\217\345\233\276\346\240\207", nullptr));
+        iconNameCombo->setItemText(9, QCoreApplication::translate("MainWindow", "send_button_large - \345\217\221\351\200\201\346\214\211\351\222\256\345\244\247\345\233\276\346\240\207", nullptr));
+        iconNameCombo->setItemText(10, QCoreApplication::translate("MainWindow", "history_dialog - \345\216\206\345\217\262\345\257\271\350\257\235\345\233\276\346\240\207", nullptr));
+        iconNameCombo->setItemText(11, QCoreApplication::translate("MainWindow", "history_dialog_small - \345\260\217\345\260\272\345\257\270\345\216\206\345\217\262\345\257\271\350\257\235\345\233\276\346\240\207", nullptr));
+        iconNameCombo->setItemText(12, QCoreApplication::translate("MainWindow", "history_dialog_large - \345\244\247\345\260\272\345\257\270\345\216\206\345\217\262\345\257\271\350\257\235\345\233\276\346\240\207", nullptr));
 
         iconPathLabel_2->setText(QCoreApplication::translate("MainWindow", "\345\233\276\346\240\207\350\267\257\345\276\204:", nullptr));
         iconPathEdit->setPlaceholderText(QCoreApplication::translate("MainWindow", "\350\257\267\351\200\211\346\213\251\345\233\276\346\240\207\346\226\207\344\273\266", nullptr));

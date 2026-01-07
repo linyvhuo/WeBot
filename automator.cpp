@@ -47,7 +47,6 @@ Automator::Automator(QObject *parent)
     m_imageRecognizer->moveToThread(&m_workerThread);
     m_inputSimulator->moveToThread(&m_workerThread);
     m_questionManager->moveToThread(&m_workerThread);
-
     // 连接线程结束信号
     connect(&m_workerThread, SIGNAL(finished()), this, SLOT(deleteLater()));
     // Remove the self-connection that was causing the signal not found error
@@ -126,53 +125,55 @@ void Automator::stop() {
     // 不管当前状态如何，都允许停止操作
     recordLog("正在停止自动化...");
     
-    // 立即设置停止标志
-    m_stopRequested = true;
-    
-    // 安全检查：确保ImageRecognizer和InputSimulator对象存在
-    if (m_imageRecognizer) {
-        // 通知ImageRecognizer停止
-        m_imageRecognizer->setStopRequested(true);
+    try {
+        // 立即设置停止标志
+        m_stopRequested = true;
         
-        // 重置图像识别器状态
-        m_imageRecognizer->resetState();
-    }
-    
-    if (m_inputSimulator) {
-        // 通知InputSimulator停止
-        m_inputSimulator->setStopRequested(true);
-    }
-    
-    // 设置为Idle状态
-    setState(Idle);
-    
-    // 确保所有线程都已终止
-    if (m_workerThread.isRunning()) {
-        recordLog("终止工作线程...");
-        m_workerThread.quit();
-        if (!m_workerThread.wait(1000)) {
-            recordLog("警告：工作线程未在1秒内终止");
-            m_workerThread.terminate();
-            m_workerThread.wait(500);
+        // 安全检查：确保ImageRecognizer和InputSimulator对象存在
+        if (m_imageRecognizer) {
+            // 通知ImageRecognizer停止
+            m_imageRecognizer->setStopRequested(true);
+            
+            // 重置图像识别器状态
+            m_imageRecognizer->resetState();
         }
+        
+        if (m_inputSimulator) {
+            // 通知InputSimulator停止
+            m_inputSimulator->setStopRequested(true);
+        }
+        
+        // 设置为Idle状态，不调用onFinished()，让runAutomation()自己处理完成逻辑
+        setState(Idle);
+        
+        recordLog("自动化已成功停止");
+        
+    } catch (const std::exception& e) {
+        recordLog(QString("停止自动化时发生异常: %1").arg(e.what()));
+        // 确保状态正确设置
+        setState(Idle);
+    } catch (...) {
+        recordLog("停止自动化时发生未知异常");
+        // 确保状态正确设置
+        setState(Idle);
     }
-    
-    // 直接调用onFinished()进行清理，避免使用QTimer::singleShot导致的线程问题
-    onFinished();
 }
 
 void Automator::runAutomation()
 {
     recordLog("[DEBUG] 开始执行自动化流程");
-    setState(Running);
-    recordLog("[DEBUG] 状态已设置为Running");
+    
+    try {
+        // 确保状态重置正确
+        setState(Running);
+        recordLog("[DEBUG] 状态已设置为Running");
 
-    // 检查是否请求停止
-    if (m_stopRequested) {
-        recordLog("[INFO] 收到停止请求，退出runAutomation");
-        onFinished();
-        return;
-    }
+        // 检查是否请求停止
+        if (m_stopRequested) {
+            recordLog("[INFO] 收到停止请求，退出runAutomation");
+            onFinished();
+            return;
+        }
 
     // 加载图像模板 - 移到工作线程中执行
     recordLog("[DEBUG] 开始加载图像模板");
@@ -486,6 +487,17 @@ void Automator::runAutomation()
     recordLog("[DEBUG] 问答循环执行完成，准备调用onFinished");
     onFinished();
     recordLog("[DEBUG] 自动化流程执行完成");
+    } catch (const std::exception& e) {
+        recordLog(QString("[ERROR] 自动化流程执行时发生异常: %1").arg(e.what()));
+        emit errorMessage(QString("自动化流程执行时发生异常: %1").arg(e.what()));
+        setState(Error);
+        onFinished();
+    } catch (...) {
+        recordLog("[ERROR] 自动化流程执行时发生未知异常");
+        emit errorMessage("自动化流程执行时发生未知异常");
+        setState(Error);
+        onFinished();
+    }
 }
 
 void Automator::onFinished()
@@ -577,16 +589,16 @@ bool Automator::enterWeChatWorkbench()
 {
     recordLog("[DEBUG] 开始执行enterWeChatWorkbench函数");
 
-    // 获取企业微信窗口句柄
-    recordLog("[DEBUG] 获取企业微信窗口句柄");
-    HWND hwnd = m_weChatController->getWeChatWindowHandle();
-    if (!hwnd) {
-        recordLog("[ERROR] 无法获取企业微信窗口句柄");
-        QString errorMsg = "无法获取企业微信窗口句柄，无法继续操作";
-        emit errorMessage(errorMsg);
-        this->stop();
-        return false;
-    }
+    try {
+        // 获取企业微信窗口句柄
+        recordLog("[DEBUG] 获取企业微信窗口句柄");
+        HWND hwnd = m_weChatController->getWeChatWindowHandle();
+        if (!hwnd) {
+            recordLog("[ERROR] 无法获取企业微信窗口句柄");
+            QString errorMsg = "无法获取企业微信窗口句柄，无法继续操作";
+            emit errorMessage(errorMsg);
+            return false;
+        }
     recordLog(QString("[DEBUG] 获取到企业微信窗口句柄: %1").arg((quintptr)hwnd, 0, 16));
 
     QPoint workbenchPos;
@@ -698,79 +710,76 @@ bool Automator::enterWeChatWorkbench()
     
     recordLog("[DEBUG] 工作台加载等待完成，已进入企业微信工作台");
     return true;
+    } catch (const std::exception& e) {
+        recordLog(QString("[ERROR] 进入工作台时发生异常: %1").arg(e.what()));
+        emit errorMessage(QString("进入工作台时发生异常: %1").arg(e.what()));
+        return false;
+    } catch (...) {
+        recordLog("[ERROR] 进入工作台时发生未知异常");
+        emit errorMessage("进入工作台时发生未知异常");
+        return false;
+    }
 }
 
 bool Automator::openMindSpark()
 {
     recordLog("[DEBUG] 开始执行openMindSpark函数");
 
-    // 获取企业微信窗口句柄
-    recordLog("[DEBUG] 获取企业微信窗口句柄");
-    HWND hwnd = m_weChatController->getWeChatWindowHandle();
-    if (!hwnd) {
-        recordLog("[ERROR] 无法获取企业微信窗口句柄");
-        return false;
-    }
+    try {
+        // 获取企业微信窗口句柄
+        recordLog("[DEBUG] 获取企业微信窗口句柄");
+        HWND hwnd = m_weChatController->getWeChatWindowHandle();
+        if (!hwnd) {
+            recordLog("[ERROR] 无法获取企业微信窗口句柄");
+            return false;
+        }
     recordLog(QString("[DEBUG] 获取到企业微信窗口句柄: %1").arg((quintptr)hwnd, 0, 16));
 
-    QPoint weiweisouPos;
+    QPoint mindsparkPos;
     bool found = false;
     
     // 多次尝试查找MindSpark图标位置（仅使用图像识别）
     const int maxAttempts = 5;
     recordLog("[DEBUG] 开始查找MindSpark图标，最大尝试次数: " + QString::number(maxAttempts));
     
-    // 尝试多个模板图像，适应不同分辨率和DPI缩放
-    QStringList templateNames = {"mindspark", "mindspark_small", "mindspark_large", "weiweisou"};
-    recordLog("[DEBUG] 准备尝试的模板变体: " + templateNames.join(", "));
+    // 定义模板优先级：先尝试小图标，再尝试大图标
+    QStringList smallIconTemplates = {"mindspark_small"};
+    QStringList largeIconTemplates = {"mindspark"};
     
-    for (int attempt = 0; attempt < maxAttempts; ++attempt) {
-        recordLog(QString("[DEBUG] 尝试 %1/%2 查找MindSpark应用").arg(attempt + 1).arg(maxAttempts));
+    // 1. 先尝试识别小图标
+    recordLog("[DEBUG] 开始尝试识别MindSpark小图标");
+    for (int attempt = 0; attempt < maxAttempts && !found && !m_stopRequested; ++attempt) {
+        recordLog(QString("[DEBUG] 尝试 %1/%2 查找MindSpark小图标").arg(attempt + 1).arg(maxAttempts));
         
-        // 检查是否请求停止
-        if (m_stopRequested) {
-            recordLog("[INFO] 收到停止请求，退出openMindSpark");
-            return false;
-        }
-        
-        // 1. 捕获工作台截图
-        QImage workbenchImage = m_imageRecognizer->captureWindow(hwnd);
-    
-        // 2. 尝试图像识别查找MindSpark图标
-        recordLog("[DEBUG] 尝试图像识别查找MindSpark图标");
-        // 尝试所有可能的模板
-        bool templateFound = false;
-        for (const QString& templateName : templateNames) {
-            recordLog(QString("[DEBUG] 使用模板 '%1' 查找MindSpark图标").arg(templateName));
-            if (m_imageRecognizer->findTemplateInWindow(hwnd, templateName, weiweisouPos)) {
+        // 尝试所有小图标模板
+        for (const QString& templateName : smallIconTemplates) {
+            recordLog(QString("[DEBUG] 使用模板 '%1' 查找MindSpark小图标").arg(templateName));
+            if (m_imageRecognizer->findTemplateInWindow(hwnd, templateName, mindsparkPos)) {
                 found = true;
-                templateFound = true;
-                recordLog(QString("[INFO] 使用模板 '%1' 找到MindSpark图标，位置: (%2, %3)").arg(templateName).arg(weiweisouPos.x()).arg(weiweisouPos.y()));
+                recordLog(QString("[INFO] 使用模板 '%1' 找到MindSpark小图标，位置: (%2, %3)").arg(templateName).arg(mindsparkPos.x()).arg(mindsparkPos.y()));
                 
                 // 获取模板尺寸，计算点击位置为识别区域的中心点
                 ConfigManager* config = ConfigManager::getInstance();
                 QSize templateSize = config->getTemplateSize(templateName);
                 if (templateSize.width() == 100 && templateSize.height() == 100) {
                     // 如果配置中没有保存尺寸，使用默认尺寸
-                    templateSize = QSize(64, 64);
+                    templateSize = QSize(48, 48);
                 }
                 
                 // 计算中心点坐标
-                weiweisouPos.setX(weiweisouPos.x() + templateSize.width() / 2);
-                weiweisouPos.setY(weiweisouPos.y() + templateSize.height() / 2);
-                recordLog(QString("[DEBUG] 计算得到MindSpark图标中心点位置: (%1, %2)").arg(weiweisouPos.x()).arg(weiweisouPos.y()));
+                mindsparkPos.setX(mindsparkPos.x() + templateSize.width() / 2);
+                mindsparkPos.setY(mindsparkPos.y() + templateSize.height() / 2);
+                recordLog(QString("[DEBUG] 计算得到MindSpark小图标中心点位置: (%1, %2)").arg(mindsparkPos.x()).arg(mindsparkPos.y()));
                 break;
             }
-            recordLog(QString("[DEBUG] 使用模板 '%1' 未找到MindSpark图标").arg(templateName));
+            recordLog(QString("[DEBUG] 使用模板 '%1' 未找到MindSpark小图标").arg(templateName));
         }
         
-        if (templateFound) break;
-        
-        recordLog(QString("[DEBUG] 未找到MindSpark图标，尝试 %1/%2").arg(attempt + 1).arg(maxAttempts));
+        if (found) break;
         
         // 如果是第一次尝试失败，尝试滚动工作台页面
-        if (attempt == 0 || attempt == 2) {
-            recordLog("[DEBUG] 尝试滚动工作台页面");
+        if (attempt == 0) {
+            recordLog("[DEBUG] 第一次尝试失败，尝试滚动工作台页面");
             // 获取窗口客户区大小
             RECT clientRect;
             GetClientRect(hwnd, &clientRect);
@@ -791,30 +800,103 @@ bool Automator::openMindSpark()
             // 执行滚动操作
             recordLog("[DEBUG] 执行滚动操作");
             m_inputSimulator->dragMouse(startPos.x, startPos.y, endPos.x, endPos.y);
-            recordLog("[DEBUG] 已滚动工作台页面，重新查找MindSpark图标");
+            recordLog("[DEBUG] 已滚动工作台页面，重新查找MindSpark小图标");
         }
         
-        // 等待一段时间后重试，使用QThread::msleep
+        // 等待一段时间后重试
         recordLog("[DEBUG] 等待1秒后重试");
         QThread::msleep(1000);
         
         // 检查是否请求停止
         if (m_stopRequested) {
-            recordLog("[INFO] 收到停止请求，退出openWeiWeiSou");
+            recordLog("[INFO] 收到停止请求，退出openMindSpark");
             return false;
         }
     }
-
+    
+    // 2. 如果未识别到小图标，尝试识别大图标
+    if (!found && !m_stopRequested) {
+        recordLog("[DEBUG] 未找到MindSpark小图标，开始尝试识别大图标");
+        
+        for (int attempt = 0; attempt < maxAttempts && !found && !m_stopRequested; ++attempt) {
+            recordLog(QString("[DEBUG] 尝试 %1/%2 查找MindSpark大图标").arg(attempt + 1).arg(maxAttempts));
+            
+            // 尝试所有大图标模板
+            for (const QString& templateName : largeIconTemplates) {
+                recordLog(QString("[DEBUG] 使用模板 '%1' 查找MindSpark大图标").arg(templateName));
+                if (m_imageRecognizer->findTemplateInWindow(hwnd, templateName, mindsparkPos)) {
+                    found = true;
+                    recordLog(QString("[INFO] 使用模板 '%1' 找到MindSpark大图标，位置: (%2, %3)").arg(templateName).arg(mindsparkPos.x()).arg(mindsparkPos.y()));
+                    
+                    // 获取模板尺寸，计算点击位置为识别区域的中心点
+                    ConfigManager* config = ConfigManager::getInstance();
+                    QSize templateSize = config->getTemplateSize(templateName);
+                    if (templateSize.width() == 100 && templateSize.height() == 100) {
+                        // 如果配置中没有保存尺寸，使用默认尺寸
+                        templateSize = QSize(64, 64);
+                    }
+                    
+                    // 计算中心点坐标
+                    mindsparkPos.setX(mindsparkPos.x() + templateSize.width() / 2);
+                    mindsparkPos.setY(mindsparkPos.y() + templateSize.height() / 2);
+                    recordLog(QString("[DEBUG] 计算得到MindSpark大图标中心点位置: (%1, %2)").arg(mindsparkPos.x()).arg(mindsparkPos.y()));
+                    break;
+                }
+                recordLog(QString("[DEBUG] 使用模板 '%1' 未找到MindSpark大图标").arg(templateName));
+            }
+            
+            if (found) break;
+            
+            // 如果是第一次尝试失败，尝试滚动工作台页面
+            if (attempt == 0) {
+                recordLog("[DEBUG] 第一次尝试失败，尝试滚动工作台页面");
+                // 获取窗口客户区大小
+                RECT clientRect;
+                GetClientRect(hwnd, &clientRect);
+                int clientWidth = clientRect.right - clientRect.left;
+                int clientHeight = clientRect.bottom - clientRect.top;
+                recordLog(QString("[DEBUG] 客户区大小: %1x%2").arg(clientWidth).arg(clientHeight));
+                
+                // 计算滚动起点和终点（从中间向上滚动）
+                POINT startPos = {clientWidth / 2, clientHeight / 2};
+                POINT endPos = {clientWidth / 2, clientHeight / 4};
+                recordLog(QString("[DEBUG] 滚动起点: (%1, %2), 终点: (%3, %4)").arg(startPos.x).arg(startPos.y).arg(endPos.x).arg(endPos.y));
+                
+                // 转换为屏幕坐标
+                ClientToScreen(hwnd, &startPos);
+                ClientToScreen(hwnd, &endPos);
+                recordLog(QString("[DEBUG] 转换为屏幕坐标 - 起点: (%1, %2), 终点: (%3, %4)").arg(startPos.x).arg(startPos.y).arg(endPos.x).arg(endPos.y));
+                
+                // 执行滚动操作
+                recordLog("[DEBUG] 执行滚动操作");
+                m_inputSimulator->dragMouse(startPos.x, startPos.y, endPos.x, endPos.y);
+                recordLog("[DEBUG] 已滚动工作台页面，重新查找MindSpark大图标");
+            }
+            
+            // 等待一段时间后重试
+            recordLog("[DEBUG] 等待1秒后重试");
+            QThread::msleep(1000);
+            
+            // 检查是否请求停止
+            if (m_stopRequested) {
+                recordLog("[INFO] 收到停止请求，退出openMindSpark");
+                return false;
+            }
+        }
+    }
+    
+    // 3. 如果仍然没有找到，显示错误信息
     if (!found) {
         recordLog("[ERROR] 多次尝试后仍未找到MindSpark图标，无法继续操作");
         QString errorMsg = "无法识别MindSpark图标，请检查企业微信是否正常运行或调整识别参数";
         emit errorMessage(errorMsg);
-        this->stop();
+        // 设置停止标志，让调用者处理后续逻辑，避免重复调用stop()导致崩溃
+        m_stopRequested = true;
         return false;
     }
 
     // 转换为屏幕坐标
-    POINT clientPos = {weiweisouPos.x(), weiweisouPos.y()};
+    POINT clientPos = {mindsparkPos.x(), mindsparkPos.y()};
     POINT screenPos;
     ClientToScreen(hwnd, &clientPos);
     screenPos = clientPos;
@@ -840,25 +922,69 @@ bool Automator::openMindSpark()
     
     // 检查是否请求停止
     if (m_stopRequested) {
-        recordLog("[INFO] 收到停止请求，退出openWeiWeiSou");
+        recordLog("[INFO] 收到停止请求，退出openMindSpark");
         return false;
     }
-
+    
+    // 5. 无论图标类型，首先尝试识别输入框
+    recordLog("[DEBUG] 无论图标类型，首先尝试识别输入框");
+    
+    // 直接使用已声明的hwnd变量
+    if (hwnd) {
+        // 尝试识别输入框
+        QPoint inputBoxPos;
+        QStringList inputBoxTemplates = {"input_box", "input_box_small", "input_box_large"};
+        bool foundInputBox = false;
+        
+        for (const QString& templateName : inputBoxTemplates) {
+            if (m_imageRecognizer->findTemplateInWindow(hwnd, templateName, inputBoxPos)) {
+                foundInputBox = true;
+                recordLog(QString("[INFO] 已识别到输入框，位置: (%1, %2)").arg(inputBoxPos.x()).arg(inputBoxPos.y()));
+                break;
+            }
+        }
+        
+        if (foundInputBox) {
+            // 已识别到输入框，直接返回成功
+            recordLog("[DEBUG] 已成功识别到输入框，跳过历史记录步骤");
+            recordLog("[DEBUG] MindSpark加载等待完成，已打开MindSpark应用");
+            return true;
+        } else {
+            // 未识别到输入框，才尝试识别历史对话图标
+            recordLog("[DEBUG] 未识别到输入框，尝试识别历史对话图标");
+            
+            // 调用enterHistoryDialog方法进入历史记录
+            if (!enterHistoryDialog()) {
+                recordLog("[WARNING] 无法进入历史记录，但已打开MindSpark，尝试继续执行");
+            }
+        }
+    }
+    
     recordLog("[DEBUG] MindSpark加载等待完成，已打开MindSpark应用");
     return true;
+    } catch (const std::exception& e) {
+        recordLog(QString("[ERROR] 打开MindSpark时发生异常: %1").arg(e.what()));
+        emit errorMessage(QString("打开MindSpark时发生异常: %1").arg(e.what()));
+        return false;
+    } catch (...) {
+        recordLog("[ERROR] 打开MindSpark时发生未知异常");
+        emit errorMessage("打开MindSpark时发生未知异常");
+        return false;
+    }
 }
 
 bool Automator::enterHistoryDialog()
 {
     recordLog("[DEBUG] 开始执行enterHistoryDialog函数");
 
-    // 获取企业微信窗口句柄
-    recordLog("[DEBUG] 获取企业微信窗口句柄");
-    HWND hwnd = m_weChatController->getWeChatWindowHandle();
-    if (!hwnd) {
-        recordLog("[ERROR] 无法获取企业微信窗口句柄");
-        return false;
-    }
+    try {
+        // 获取企业微信窗口句柄
+        recordLog("[DEBUG] 获取企业微信窗口句柄");
+        HWND hwnd = m_weChatController->getWeChatWindowHandle();
+        if (!hwnd) {
+            recordLog("[ERROR] 无法获取企业微信窗口句柄");
+            return false;
+        }
     recordLog(QString("[DEBUG] 获取到企业微信窗口句柄: %1").arg((quintptr)hwnd, 0, 16));
 
     QPoint historyDialogPos;
@@ -993,6 +1119,15 @@ bool Automator::enterHistoryDialog()
 
     recordLog("[DEBUG] 历史对话界面加载等待完成，已进入历史对话界面");
     return true;
+    } catch (const std::exception& e) {
+        recordLog(QString("[ERROR] 进入历史对话时发生异常: %1").arg(e.what()));
+        emit errorMessage(QString("进入历史对话时发生异常: %1").arg(e.what()));
+        return false;
+    } catch (...) {
+        recordLog("[ERROR] 进入历史对话时发生未知异常");
+        emit errorMessage("进入历史对话时发生未知异常");
+        return false;
+    }
 }
 
 
@@ -1000,12 +1135,13 @@ bool Automator::enterHistoryDialog()
 {
     recordLog("[DEBUG] 开始执行performQuestionAnswer函数");
     
-    // 获取企业微信窗口句柄
-    HWND hwnd = m_weChatController->getWeChatWindowHandle();
-    if (!hwnd) {
-        recordLog("[ERROR] 无法获取企业微信窗口句柄");
-        return false;
-    }
+    try {
+        // 获取企业微信窗口句柄
+        HWND hwnd = m_weChatController->getWeChatWindowHandle();
+        if (!hwnd) {
+            recordLog("[ERROR] 无法获取企业微信窗口句柄");
+            return false;
+        }
     recordLog(QString("[DEBUG] 获取到企业微信窗口句柄: %1").arg((quintptr)hwnd, 0, 16));
     
     // 1. 捕获MindSpark页面截图（仅用于识别，不保存）
@@ -1131,9 +1267,20 @@ bool Automator::enterHistoryDialog()
      recordLog(QString("[DEBUG] 问题长度: %1 字符").arg(question.length()));
      recordLog(QString("[DEBUG] 问题编码: %1").arg(question.toUtf8().toHex()));
      
-     // 使用键盘模拟输入文本
-     recordLog("[DEBUG] 使用键盘模拟方式输入文本");
-     m_inputSimulator->typeText(finalQuestion);
+     // 根据配置选择输入方式
+     int inputMethod = m_configManager->getInputMethod();
+     recordLog(QString("[DEBUG] 使用输入方式: %1 (0=键盘, 1=粘贴)").arg(inputMethod));
+     
+     // 根据输入方式选择输入方法
+     if (inputMethod == 0) {
+         // 使用键盘模拟输入文本
+         recordLog("[DEBUG] 使用键盘模拟方式输入文本");
+         m_inputSimulator->typeText(finalQuestion);
+     } else {
+         // 使用复制粘贴方式输入文本
+         recordLog("[DEBUG] 使用复制粘贴方式输入文本");
+         m_inputSimulator->pasteText(finalQuestion);
+     }
      recordLog("[DEBUG] 问题输入完成");
      
      // 等待500ms，确保输入完成
@@ -1241,6 +1388,15 @@ bool Automator::enterHistoryDialog()
 
     recordLog("[DEBUG] 问答流程完成，performQuestionAnswer函数执行结束");
     return true;
+    } catch (const std::exception& e) {
+        recordLog(QString("[ERROR] 执行问答流程时发生异常: %1").arg(e.what()));
+        emit errorMessage(QString("执行问答流程时发生异常: %1").arg(e.what()));
+        return false;
+    } catch (...) {
+        recordLog("[ERROR] 执行问答流程时发生未知异常");
+        emit errorMessage("执行问答流程时发生未知异常");
+        return false;
+    }
 }
 
 bool Automator::waitForAnswerCompletion(HWND hwnd)
@@ -1301,10 +1457,10 @@ void Automator::recordLog(const QString& message)
     m_lastLogMessage = message;
     m_lastLogTime = currentTime;
     
-    // 4. 清理过期日志（超过5秒的日志）
-    QList<QString> keysToRemove;
+    // 4. 清理超过1秒的旧日志
+    QStringList keysToRemove;
     for (auto it = m_logMessageHistory.constBegin(); it != m_logMessageHistory.constEnd(); ++it) {
-        if (currentTime - it.value() > 5000) {
+        if (currentTime - it.value() > 1000) {
             keysToRemove.append(it.key());
         }
     }
@@ -1313,7 +1469,7 @@ void Automator::recordLog(const QString& message)
         m_logMessageHistory.remove(key);
     }
     
-    // 5. 输出日志
+    // 4. 输出日志
     emit logMessage(message);
 }
 

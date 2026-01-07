@@ -89,9 +89,10 @@ LONG WINAPI exceptionFilter(EXCEPTION_POINTERS* exceptionInfo)
         break;
     }
     
-    // 记录崩溃信息到日志文件，使用指定的D盘路径
-    QString crashLogPath = "D:/OneDrive - linl/文档/WeBot/Logs/crash.log";
-    QDir().mkpath("D:/OneDrive - linl/文档/WeBot/Logs");
+    // 记录崩溃信息到日志文件，使用项目路径
+    QString projectPath = QCoreApplication::applicationDirPath();
+    QString crashLogPath = projectPath + "/logs/crash.log";
+    QDir().mkpath(projectPath + "/logs");
     QFile crashFile(crashLogPath);
     if (crashFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text)) {
         QTextStream stream(&crashFile);
