@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/templates">
+        <file>templates/MindSpark_logo.png</file>
+    </qresource>
+    <qresource prefix="/icons"/>
+    <qresource prefix="/">
+        <file>icons/app_icon.svg</file>
+    </qresource>
+</RCC>

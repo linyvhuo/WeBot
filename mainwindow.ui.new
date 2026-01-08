@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>800</width>
+    <height>884</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>WeBot - 企业微信自动问答工具</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="mainLayout">
+    <item>
+     <widget class="QLabel" name="titleLabel">
+      <property name="styleSheet">
+       <string notr="true">font-size: 20pt; font-weight: bold; color: #2c3e50; margin: 10px;</string>
+      </property>
+      <property name="text">
+       <string>🤖 WeBot - 企业微信自动问答工具</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>2</number>
+      </property>
+      <widget class="QWidget" name="basicTab">
+       <attribute name="title">
+        <string>基础设置</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="basicLayout">
+        <item>
+         <widget class="QGroupBox" name="wechatGroup">
+          <property name="title">
+           <string>企业微信设置</string>
+          </property>
+          <layout class="QGridLayout" name="wechatLayout">
+           <item row="0" column="0">
+            <widget class="QLabel" name="wechatPathLabel">
+             <property name="text">
+              <string>企业微信路径:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="wechatPathEdit">
+             <property name="placeholderText">
+              <string>请选择企业微信安装路径</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QPushButton" name="browseWechatButton">
+             <property name="maximumSize">
+              <size>
+               <width>80</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>浏览...</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0" colspan="3">
+            <widget class="QCheckBox" name="topMostCheck">
+             <property name="text">
+              <string>窗口置顶显示</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="questionGroup">
+          <property name="title">
+           <string>问题设置</string>
+          </property>
+          <layout class="QGridLayout" name="questionLayout">
+           <item row="0" column="0">
+            <widget class="QLabel" name="questionPathLabel">
+             <property name="text">
+              <string>问题库路径:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="questionPathEdit">
+             <property name="placeholderText">
+              <string>请选择问题库文件</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QPushButton" name="browseQuestionsButton">
+             <property name="maximumSize">
+              <size>
+               <width>80</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>浏览...</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="questionModeLabel">
+             <property name="text">
+              <string>问题模式:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QComboBox" name="questionModeCombo">
+             <item>
+              <property name="text">
+               <string>循环使用预设问题</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>随机使用预设问题</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>自动生成问题</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item row="2" column="0">
+            <widget class="QLabel" name="promptLabel">
+             <property name="text">
+              <string>回答限制提示:</string>
+             </property>
+            </widget>
+           </item>
+           <item row="2" column="1" colspan="2">
+            <widget class="QLineEdit" name="promptEdit">
+             <property name="placeholderText">
+              <string>回答请勿超过十个字</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="automationGroup">
+          <property name="title">
+           <string>自动化设置</string>
+          </property>
+          <widget class="QLabel" name="inputMethodHintLabel">
+           <property name="geometry">
+            <rect>
+             <x>422</x>
+             <y>102</y>
+             <width>265</width>
+             <height>58</height>
+            </rect>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">font-size: 10pt; color: #e67e22; font-weight: bold;</string>
+           </property>
+           <property name="text">
+            <string>💡 提示：按下ESC按键可停止自动化执行，模拟键盘输入不可用时可切换复制粘贴输入。</string>
+           </property>
+           <property name="wordWrap">
+            <bool>true</bool>
+           </property>
+          </widget>
+          <widget class="QSpinBox" name="loopCountSpin">
+           <property name="geometry">
+            <rect>
+             <x>286</x>
+             <y>34</y>
+             <width>64</width>
+             <height>28</height>
+            </rect>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+           <property name="value">
+            <number>10</number>
+           </property>
+          </widget>
+          <widget class="QSpinBox" name="timeoutSpin">
+           <property name="geometry">
+            <rect>
+             <x>693</x>
+             <y>34</y>
+             <width>55</width>
+             <height>28</height>
+            </rect>
+           </property>
+           <property name="minimum">
+            <number>1</number>
+           </property
