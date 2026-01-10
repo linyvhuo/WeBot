@@ -1,0 +1,15 @@
+# 下载地址说明
+本项目提供以下历史版本的百度网盘下载链接，您可根据需求选择对应版本获取：
+
+| 版本号   | 网盘下载链接                                                                 | 提取码  |
+|----------|------------------------------------------------------------------------------|---------|
+| V1.1.2   | [https://pan.baidu.com/s/1axNJGqOiT6bgEF-4yo4z9w?pwd=pr3p](https://pan.baidu.com/s/1axNJGqOiT6bgEF-4yo4z9w?pwd=pr3p) | pr3p    |
+| V1.1.1   | [https://pan.baidu.com/s/15qBhn32N4UNTj9leA6dA4g](https://pan.baidu.com/s/15qBhn32N4UNTj9leA6dA4g)                 | vucs    |
+| V1.0.1   | [https://pan.baidu.com/s/1W-6je3KJwDudhYMY9NvBEg](https://pan.baidu.com/s/1W-6je3KJwDudhYMY9NvBEg)                 | r9ca    |
+| V1.0.0   | [https://pan.baidu.com/s/1gcR03a9rYykOZovp_yufsw](https://pan.baidu.com/s/1gcR03a9rYykOZovp_yufsw)                 | d6zn    |
+
+## 下载说明
+1. 点击对应版本的链接，跳转至百度网盘提取页面；
+2. 输入表格中的提取码，即可获取文件下载权限；
+3. 若遇到链接失效、文件无法提取等问题，请在 Issues 中留言反馈，我们会及时更新链接；
+4. 建议优先下载最新版本（V1.1.2），包含更多功能优化及问题修复。
