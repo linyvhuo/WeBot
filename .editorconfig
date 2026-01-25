@@ -1,0 +1,10 @@
+[Editor]
+AutoIndent=false
+AutoDetect=false
+CleanIndentation=false
+CleanWhitespace=false
+SkipTrailingWhitespace=false
+AddFinalNewLine=false
+
+[IgnoreFiles]
+*.ui

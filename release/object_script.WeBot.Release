@@ -9,6 +9,10 @@ release/inputsimulator.o
 release/questionmanager.o
 release/recognitionoverlay.o
 release/clickcapturewidget.o
+release/floatingwindow.o
+release/thememanager.o
+release/screenshotselector.o
+release/framelesswindow.o
 release/qrc_resources.o
 release/moc_mainwindow.o
 release/moc_automator.o
@@ -20,3 +24,7 @@ release/moc_inputsimulator.o
 release/moc_questionmanager.o
 release/moc_recognitionoverlay.o
 release/moc_clickcapturewidget.o
+release/moc_floatingwindow.o
+release/moc_thememanager.o
+release/moc_screenshotselector.o
+release/moc_framelesswindow.o

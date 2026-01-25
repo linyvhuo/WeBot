@@ -20,9 +20,9 @@ win32 {
     LIBS += -lopencv_core410 -lopencv_imgproc410 -lopencv_highgui410 -lopencv_imgcodecs410 -lopencv_features2d410
 }
 
-SOURCES = main.cpp mainwindow.cpp automator.cpp configmanager.cpp logger.cpp wechatcontroller.cpp imagerecognizer.cpp inputsimulator.cpp questionmanager.cpp recognitionoverlay.cpp clickcapturewidget.cpp
+SOURCES = main.cpp mainwindow.cpp automator.cpp configmanager.cpp logger.cpp wechatcontroller.cpp imagerecognizer.cpp inputsimulator.cpp questionmanager.cpp recognitionoverlay.cpp clickcapturewidget.cpp floatingwindow.cpp thememanager.cpp screenshotselector.cpp framelesswindow.cpp
 
-HEADERS = mainwindow.h automator.h configmanager.h logger.h wechatcontroller.h imagerecognizer.h inputsimulator.h questionmanager.h recognitionoverlay.h clickcapturewidget.h
+HEADERS = mainwindow.h automator.h configmanager.h logger.h wechatcontroller.h imagerecognizer.h inputsimulator.h questionmanager.h recognitionoverlay.h clickcapturewidget.h floatingwindow.h thememanager.h screenshotselector.h framelesswindow.h
 
 FORMS = mainwindow.ui
 

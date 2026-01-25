@@ -16,7 +16,9 @@ public:
     enum Theme {
         LightTheme,    // 浅色主题
         DarkTheme,     // 深色主题
-        TechTheme      // 科技主题
+        TechTheme,     // 科技主题
+        SakuraTheme,   // 樱花主题
+        WarmTheme      // 暖色主题
     };
     Q_ENUM(Theme)
 
@@ -48,6 +50,8 @@ private:
     QString getLightThemeStyle() const;
     QString getDarkThemeStyle() const;
     QString getTechThemeStyle() const;
+    QString getSakuraThemeStyle() const;
+    QString getWarmThemeStyle() const;
 
     Theme m_currentTheme;
     QMap<Theme, QString> m_themeStyles;

@@ -151,6 +151,12 @@ public:
     
     // 设置键盘输入延迟（毫秒）
     void setKeyboardInputDelay(int delay);
+
+    // 获取截图快捷键
+    QString getScreenshotShortcut() const;
+
+    // 设置截图快捷键
+    void setScreenshotShortcut(const QString &shortcut);
     
     // 获取日志级别
     int getLogLevel() const;
@@ -243,6 +249,30 @@ public:
     // 输入方式设置
     int getInputMethod() const;
     void setInputMethod(int method);
+
+    // 主题设置
+    int getTheme() const;
+    void setTheme(int theme);
+
+    // 悬浮窗设置
+    int getFloatingWindowX() const;
+    void setFloatingWindowX(int x);
+    int getFloatingWindowY() const;
+    void setFloatingWindowY(int y);
+    int getFloatingWindowWidth() const;
+    void setFloatingWindowWidth(int width);
+    int getFloatingWindowHeight() const;
+    void setFloatingWindowHeight(int height);
+    bool getFloatingWindowVisible() const;
+    void setFloatingWindowVisible(bool visible);
+
+    // 关闭行为设置
+    enum CloseBehavior {
+        MinimizeToTray = 0,  // 最小化到系统托盘
+        CloseDirectly = 1     // 直接关闭
+    };
+    int getCloseBehavior() const;
+    void setCloseBehavior(int behavior);
 
 signals:
     void logMessage(const QString &message);
@@ -349,6 +379,22 @@ private:
     
     // 输入方式设置
     int inputMethod;
+
+    // 主题设置
+    int theme;
+
+    // 悬浮窗设置
+    int floatingWindowX;
+    int floatingWindowY;
+    int floatingWindowWidth;
+    int floatingWindowHeight;
+    bool floatingWindowVisible;
+
+    // 关闭行为设置
+    int closeBehavior;
+
+    // 截图快捷键设置
+    QString m_screenshotShortcut;
 
     QSettings *settings;
 

@@ -18,12 +18,11 @@
 #include <QtWidgets/QGridLayout>
 #include <QtWidgets/QGroupBox>
 #include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QKeySequenceEdit>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
-#include <QtWidgets/QMainWindow>
 #include <QtWidgets/QProgressBar>
 #include <QtWidgets/QPushButton>
-#include <QtWidgets/QRadioButton>
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QSpinBox>
 #include <QtWidgets/QTabWidget>
@@ -38,17 +37,16 @@ class Ui_MainWindow
 public:
     QWidget *centralwidget;
     QVBoxLayout *mainLayout;
-    QLabel *titleLabel;
     QTabWidget *tabWidget;
     QWidget *basicTab;
-    QVBoxLayout *basicLayout;
+    QLabel *titleLabel;
     QGroupBox *wechatGroup;
     QGridLayout *wechatLayout;
-    QLabel *wechatPathLabel;
-    QLineEdit *wechatPathEdit;
-    QPushButton *browseWechatButton;
-    QCheckBox *topMostCheck;
     QCheckBox *floatingWindowCheck;
+    QPushButton *browseWechatButton;
+    QLineEdit *wechatPathEdit;
+    QCheckBox *topMostCheck;
+    QLabel *wechatPathLabel;
     QGroupBox *questionGroup;
     QGridLayout *questionLayout;
     QLabel *questionPathLabel;
@@ -68,22 +66,25 @@ public:
     QSpinBox *delaySpin;
     QCheckBox *continueOnErrorCheck;
     QCheckBox *continueOnTimeoutCheck;
-    QRadioButton *keyboardInputRadio;
-    QRadioButton *pasteInputRadio;
+    QCheckBox *keyboardInputCheck;
+    QCheckBox *pasteInputCheck;
     QLabel *inputMethodHintLabel;
-    QHBoxLayout *buttonLayout;
-    QPushButton *startButton;
-    QPushButton *stopButton;
-    QSpacerItem *horizontalSpacer;
-    QPushButton *saveConfigButton;
-    QPushButton *loadConfigButton;
     QGroupBox *statusGroup;
     QVBoxLayout *statusLayout;
     QLabel *statusLabel;
     QLabel *progressLabel;
     QProgressBar *progressBar;
+    QHBoxLayout *themeSelectLayout;
+    QLabel *themeSelectLabel;
+    QComboBox *themeCombo;
+    QWidget *layoutWidget;
+    QHBoxLayout *horizontalLayout;
+    QPushButton *startButton;
+    QPushButton *stopButton;
+    QSpacerItem *horizontalSpacer_2;
+    QPushButton *saveConfigButton;
+    QPushButton *loadConfigButton;
     QWidget *advancedTab;
-    QVBoxLayout *advancedLayout;
     QGroupBox *pathConfigGroup;
     QGridLayout *pathConfigLayout;
     QLabel *configPathLabel;
@@ -115,14 +116,22 @@ public:
     QCheckBox *multiMonitorCheck;
     QLabel *primaryMonitorLabel;
     QSpinBox *primaryMonitorSpin;
+    QGroupBox *shortcutGroup;
+    QHBoxLayout *shortcutGroupLayout;
+    QLabel *screenshotShortcutLabel;
+    QKeySequenceEdit *screenshotShortcutEdit;
+    QPushButton *applyShortcutButton;
+    QLabel *closeBehaviorLabel;
+    QComboBox *closeBehaviorCombo;
+    QSpacerItem *shortcutSpacer;
+    QWidget *layoutWidget1;
     QHBoxLayout *advancedButtonLayout;
     QSpacerItem *advancedButtonSpacer;
     QPushButton *saveAdvancedConfigButton;
     QPushButton *loadAdvancedConfigButton;
-    QSpacerItem *advancedSpacer;
     QWidget *logTab;
-    QVBoxLayout *logLayout;
     QTextEdit *logTextEdit;
+    QWidget *layoutWidget2;
     QVBoxLayout *logButtonLayout;
     QHBoxLayout *logButtons;
     QPushButton *exportLogButton;
@@ -130,7 +139,6 @@ public:
     QSpacerItem *logSpacer;
     QLabel *logSavePathLabel;
     QWidget *iconTab;
-    QVBoxLayout *iconLayout;
     QGroupBox *iconGroup;
     QGridLayout *iconGridLayout;
     QLabel *iconNameLabel;
@@ -149,9 +157,7 @@ public:
     QPushButton *saveIconButton;
     QPushButton *resetIconButton;
     QSpacerItem *iconSpacer;
-    QSpacerItem *iconTabSpacer;
     QWidget *aboutTab;
-    QVBoxLayout *aboutLayout;
     QGroupBox *supportGroup;
     QVBoxLayout *supportLayout;
     QLabel *donationTextLabel;
@@ -171,75 +177,297 @@ public:
     QSpacerItem *aboutSpacer;
     QLabel *copyrightLabel;
     QLabel *versionLabel;
-    QGroupBox *themeGroup;
-    QVBoxLayout *themeLayout;
-    QLabel *themeLabel;
-    QHBoxLayout *themeButtonLayout;
-    QPushButton *lightThemeButton;
-    QPushButton *darkThemeButton;
-    QPushButton *techThemeButton;
 
-    void setupUi(QMainWindow *MainWindow)
+    void setupUi(QWidget *MainWindow)
     {
         if (MainWindow->objectName().isEmpty())
             MainWindow->setObjectName("MainWindow");
-        MainWindow->resize(800, 964);
+        MainWindow->resize(746, 949);
         QIcon icon;
         icon.addFile(QString::fromUtf8(":/icons/icons/app_icon.svg"), QSize(), QIcon::Mode::Normal, QIcon::State::Off);
         MainWindow->setWindowIcon(icon);
+        MainWindow->setStyleSheet(QString::fromUtf8("/* macOS\351\243\216\346\240\274\344\270\273\347\252\227\345\217\243\346\240\267\345\274\217 - \347\233\264\350\247\222\350\256\276\350\256\241 */\n"
+"QMainWindow {\n"
+"    background: qlineargradient(x1:0, y1:0, x2:1, y2:1,\n"
+"        stop:0 rgba(248, 250, 252, 1),\n"
+"        stop:0.5 rgba(241, 245, 249, 1),\n"
+"        stop:1 rgba(235, 240, 245, 1));\n"
+"    border-radius: 0px;\n"
+"    border: 1px solid rgba(66, 133, 244, 0.1);\n"
+"}\n"
+"\n"
+"/* \345\210\206\347\273\204\346\241\206\346\240\267\345\274\217 - macOS\351\243\216\346\240\274\347\233\264\350\247\222 */\n"
+"QGroupBox {\n"
+"    font-weight: 600;\n"
+"    border: 1px solid qlineargradient(x1:0, y1:0, x2:1, y2:0,\n"
+"        stop:0 rgba(66, 133, 244, 0.3),\n"
+"        stop:1 rgba(52, 168, 83, 0.3));\n"
+"    border-radius: 0px;\n"
+"    margin-top: 16px;\n"
+"    padding-top: 16px;\n"
+"    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,\n"
+"        stop:0 rgba(255,255, 255, 0.9),\n"
+"        stop:1 rgba(248, 250, 252, 0.8));\n"
+"}\n"
+"\n"
+"QGroupBox"
+                        "::title {\n"
+"    subcontrol-origin: margin;\n"
+"    left: 12px;\n"
+"    padding: 0 12px;\n"
+"    color: #1a73e8;\n"
+"    font-size: 14px;\n"
+"    font-weight: 600;\n"
+"    background: rgba(255, 255, 255, 0.9);\n"
+"    border-radius: 0px;\n"
+"    margin-top: -8px;\n"
+"}\n"
+"\n"
+"/* \346\214\211\351\222\256\346\240\267\345\274\217 - macOS\351\243\216\346\240\274\347\233\264\350\247\222 */\n"
+"QPushButton {\n"
+"    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,\n"
+"        stop:0 rgba(66, 133, 244, 1),\n"
+"        stop:1 rgba(52, 121, 193, 1));\n"
+"    color: white;\n"
+"    border: none;\n"
+"    border-radius: 0px;\n"
+"    padding: 8px 16px;\n"
+"    font-size: 13px;\n"
+"    font-weight: 500;\n"
+"    min-height: 28px;\n"
+"}\n"
+"\n"
+"QPushButton:hover {\n"
+"    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,\n"
+"        stop:0 rgba(52, 121, 193, 1),\n"
+"        stop:1 rgba(41, 98, 155, 1));\n"
+"}\n"
+"\n"
+"QPushButton:pressed {\n"
+"    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,\n"
+"        stop:0 "
+                        "rgba(41, 98, 155, 1),\n"
+"        stop:1 rgba(30, 75, 117, 1));\n"
+"}\n"
+"\n"
+"QPushButton:disabled {\n"
+"    background: rgba(189, 189, 189, 0.5);\n"
+"    color: rgba(117, 117, 117, 0.8);\n"
+"}\n"
+"\n"
+"/* \347\211\271\346\256\212\346\214\211\351\222\256\346\240\267\345\274\217 */\n"
+"QPushButton#startButton {\n"
+"    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,\n"
+"        stop:0 rgba(52, 168, 83, 1),\n"
+"        stop:1 rgba(25, 135, 84, 1));\n"
+"    font-size: 14px;\n"
+"    font-weight: 600;\n"
+"    padding: 12px 24px;\n"
+"    min-width: 180px;\n"
+"    min-height: 40px;\n"
+"}\n"
+"\n"
+"QPushButton#startButton:hover {\n"
+"    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,\n"
+"        stop:0 rgba(25, 135, 84, 1),\n"
+"        stop:1 rgba(15, 85, 52, 1));\n"
+"}\n"
+"\n"
+"QPushButton#stopButton {\n"
+"    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,\n"
+"        stop:0 rgba(234, 67, 53, 1),\n"
+"        stop:1 rgba(197, 57, 41, 1));\n"
+"}\n"
+"\n"
+"QPushButton#stopButton:hover {\n"
+"    background: "
+                        "qlineargradient(x1:0, y1:0, x2:0, y2:1,\n"
+"        stop:0 rgba(197, 57, 41, 1),\n"
+"        stop:1 rgba(160, 47, 35, 1));\n"
+"}\n"
+"\n"
+"/* \346\240\207\347\255\276\351\241\265\346\240\267\345\274\217 - macOS\351\243\216\346\240\274\347\233\264\350\247\222 */\n"
+"QTabWidget::pane {\n"
+"    border: 1px solid #e1e5e9;\n"
+"    border-radius: 0px;\n"
+"    background-color: rgba(255,255,255, 0.9);\n"
+"    top: -1px;\n"
+"}\n"
+"\n"
+"QTabBar::tab {\n"
+"    background-color: rgba(255,255,255, 0.7);\n"
+"    border: 1px solid #e1e5e9;\n"
+"    border-bottom: none;\n"
+"    border-top-left-radius: 0px;\n"
+"    border-top-right-radius: 0px;\n"
+"    padding: 8px 16px;\n"
+"    margin-right: 2px;\n"
+"    color: #5f6368;\n"
+"    font-weight: 500;\n"
+"    min-width: 80px;\n"
+"}\n"
+"\n"
+"QTabBar::tab:selected {\n"
+"    background-color: #ffffff;\n"
+"    color: #1a73e8;\n"
+"    border-bottom: 2px solid #1a73e8;\n"
+"}\n"
+"\n"
+"QTabBar::tab:hover:!selected {\n"
+"    background-color: rgba(26, 115, 232, 0.1);\n"
+"    color: #1a73e8;\n"
+""
+                        "}\n"
+"\n"
+"/* \350\276\223\345\205\245\346\241\206\346\240\267\345\274\217 - macOS\351\243\216\346\240\274\347\233\264\350\247\222 */\n"
+"QLineEdit, QTextEdit, QSpinBox, QDoubleSpinBox, QComboBox {\n"
+"    border: 1px solid #dadce0;\n"
+"    border-radius: 0px;\n"
+"    padding: 8px 12px;\n"
+"    background-color: white;\n"
+"    font-size: 13px;\n"
+"    color: #202124;\n"
+"}\n"
+"\n"
+"QLineEdit:focus, QTextEdit:focus, QSpinBox:focus, QDoubleSpinBox:focus, QComboBox:focus {\n"
+"    border-color: #1a73e8;\n"
+"    background-color: #f8fafc;\n"
+"}\n"
+"\n"
+"/* \346\240\207\347\255\276\346\240\267\345\274\217 */\n"
+"QLabel {\n"
+"    color: #202124;\n"
+"    font-size: 13px;\n"
+"}\n"
+"\n"
+"/* \345\244\215\351\200\211\346\241\206\346\240\267\345\274\217 - macOS\351\243\216\346\240\274\347\233\264\350\247\222 */\n"
+"QCheckBox {\n"
+"    spacing: 8px;\n"
+"    font-size: 13px;\n"
+"    color: #202124;\n"
+"}\n"
+"\n"
+"QCheckBox::indicator {\n"
+"    width: 18px;\n"
+"    height: 18px;\n"
+"    border: 2px solid #dadce0;\n"
+"    bor"
+                        "der-radius: 0px;\n"
+"    background-color: white;\n"
+"}\n"
+"\n"
+"QCheckBox::indicator:checked {\n"
+"    background-color: #1a73e8;\n"
+"    border-color: #1a73e8;\n"
+"}\n"
+"\n"
+"QCheckBox::indicator:hover {\n"
+"    border-color: #1a73e8;\n"
+"}\n"
+"\n"
+"/* \346\273\232\345\212\250\346\235\241\346\240\267\345\274\217 */\n"
+"QScrollBar:vertical {\n"
+"    background-color: rgba(255,255,255, 0.5);\n"
+"    width: 12px;\n"
+"    border-radius: 0px;\n"
+"}\n"
+"\n"
+"QScrollBar::handle:vertical {\n"
+"    background-color: rgba(0, 0, 0, 0.3);\n"
+"    border-radius: 0px;\n"
+"    min-height: 30px;\n"
+"}\n"
+"\n"
+"QScrollBar::handle:vertical:hover {\n"
+"    background-color: rgba(0, 0, 0, 0.5);\n"
+"}\n"
+"\n"
+"QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {\n"
+"    height: 0px;\n"
+"}\n"
+"\n"
+"/* \350\277\233\345\272\246\346\235\241\346\240\267\345\274\217 - macOS\351\243\216\346\240\274\347\233\264\350\247\222 */\n"
+"QProgressBar {\n"
+"    border: 2px solid #ddd;\n"
+"    border-radius: 0px;\n"
+"    background-colo"
+                        "r: rgba(255,255,255, 0.5);\n"
+"    text-align: center;\n"
+"    font-weight: 500;\n"
+"    color: #333;\n"
+"    height: 20px;\n"
+"}\n"
+"\n"
+"QProgressBar::chunk {\n"
+"    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,\n"
+"        stop:0 rgba(52, 152, 219, 200),\n"
+"        stop:1 rgba(41, 128, 185, 200));\n"
+"    border-radius: 0px;\n"
+"}\n"
+"\n"
+"/* \346\227\245\345\277\227\346\226\207\346\234\254\346\241\206\346\240\267\345\274\217 */\n"
+"QTextEdit#logTextEdit {\n"
+"    background-color: rgba(32, 33, 36, 0.05);\n"
+"    border: 1px solid #e1e5e9;\n"
+"    border-radius: 0px;\n"
+"    font-family: 'Consolas', 'Monaco', monospace;\n"
+"    font-size: 12px;\n"
+"    line-height: 1.4;\n"
+"    color: #202124;\n"
+"}"));
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName("centralwidget");
+        centralwidget->setGeometry(QRect(20, 30, 706, 902));
         mainLayout = new QVBoxLayout(centralwidget);
         mainLayout->setObjectName("mainLayout");
-        titleLabel = new QLabel(centralwidget);
-        titleLabel->setObjectName("titleLabel");
-        titleLabel->setStyleSheet(QString::fromUtf8("font-size: 20pt; font-weight: bold; color: #2c3e50; margin: 10px;"));
-        titleLabel->setAlignment(Qt::AlignmentFlag::AlignCenter);
-
-        mainLayout->addWidget(titleLabel);
-
+        mainLayout->setContentsMargins(0, 0, 0, 0);
         tabWidget = new QTabWidget(centralwidget);
         tabWidget->setObjectName("tabWidget");
+        tabWidget->setEnabled(true);
+        tabWidget->setMinimumSize(QSize(100, 200));
         basicTab = new QWidget();
         basicTab->setObjectName("basicTab");
-        basicLayout = new QVBoxLayout(basicTab);
-        basicLayout->setObjectName("basicLayout");
+        titleLabel = new QLabel(basicTab);
+        titleLabel->setObjectName("titleLabel");
+        titleLabel->setEnabled(true);
+        titleLabel->setGeometry(QRect(9, 9, 681, 56));
+        titleLabel->setStyleSheet(QString::fromUtf8("font-size: 18px; font-weight: 600; color: #2c3e50; margin: 10px;"));
+        titleLabel->setAlignment(Qt::AlignmentFlag::AlignCenter);
         wechatGroup = new QGroupBox(basicTab);
         wechatGroup->setObjectName("wechatGroup");
         wechatGroup->setEnabled(true);
+        wechatGroup->setGeometry(QRect(9, 87, 681, 138));
         wechatLayout = new QGridLayout(wechatGroup);
         wechatLayout->setObjectName("wechatLayout");
-        wechatPathLabel = new QLabel(wechatGroup);
-        wechatPathLabel->setObjectName("wechatPathLabel");
+        floatingWindowCheck = new QCheckBox(wechatGroup);
+        floatingWindowCheck->setObjectName("floatingWindowCheck");
 
-        wechatLayout->addWidget(wechatPathLabel, 0, 0, 1, 1);
+        wechatLayout->addWidget(floatingWindowCheck, 3, 0, 1, 3);
+
+        browseWechatButton = new QPushButton(wechatGroup);
+        browseWechatButton->setObjectName("browseWechatButton");
+        browseWechatButton->setMinimumSize(QSize(80, 44));
+
+        wechatLayout->addWidget(browseWechatButton, 1, 2, 1, 1);
 
         wechatPathEdit = new QLineEdit(wechatGroup);
         wechatPathEdit->setObjectName("wechatPathEdit");
 
-        wechatLayout->addWidget(wechatPathEdit, 0, 1, 1, 1);
-
-        browseWechatButton = new QPushButton(wechatGroup);
-        browseWechatButton->setObjectName("browseWechatButton");
-        browseWechatButton->setMaximumSize(QSize(80, 16777215));
-
-        wechatLayout->addWidget(browseWechatButton, 0, 2, 1, 1);
+        wechatLayout->addWidget(wechatPathEdit, 1, 1, 1, 1);
 
         topMostCheck = new QCheckBox(wechatGroup);
         topMostCheck->setObjectName("topMostCheck");
 
-        wechatLayout->addWidget(topMostCheck, 1, 0, 1, 3);
+        wechatLayout->addWidget(topMostCheck, 2, 0, 1, 3);
 
-        floatingWindowCheck = new QCheckBox(wechatGroup);
-        floatingWindowCheck->setObjectName("floatingWindowCheck");
+        wechatPathLabel = new QLabel(wechatGroup);
+        wechatPathLabel->setObjectName("wechatPathLabel");
 
-        wechatLayout->addWidget(floatingWindowCheck, 2, 0, 1, 3);
-
-
-        basicLayout->addWidget(wechatGroup);
+        wechatLayout->addWidget(wechatPathLabel, 1, 0, 1, 1);
 
         questionGroup = new QGroupBox(basicTab);
         questionGroup->setObjectName("questionGroup");
+        questionGroup->setGeometry(QRect(9, 231, 681, 158));
         questionLayout = new QGridLayout(questionGroup);
         questionLayout->setObjectName("questionLayout");
         questionPathLabel = new QLabel(questionGroup);
@@ -254,9 +482,7 @@ public:
 
         browseQuestionsButton = new QPushButton(questionGroup);
         browseQuestionsButton->setObjectName("browseQuestionsButton");
-        browseQuestionsButton->setMaximumSize(QSize(80, 16777215));
-        browseQuestionsButton->setStyleSheet(QString::fromUtf8("font-size: 10pt; background-color: #607D8B; color: white; border-radius: 4px; padding: 4px 8px; border: none;\n"
-"QPushButton:pressed { background-color: #455A64; transform: translateY(1px); }"));
+        browseQuestionsButton->setMinimumSize(QSize(80, 44));
 
         questionLayout->addWidget(browseQuestionsButton, 0, 2, 1, 1);
 
@@ -266,7 +492,6 @@ public:
         questionLayout->addWidget(questionModeLabel, 1, 0, 1, 1);
 
         questionModeCombo = new QComboBox(questionGroup);
-        questionModeCombo->addItem(QString());
         questionModeCombo->addItem(QString());
         questionModeCombo->addItem(QString());
         questionModeCombo->setObjectName("questionModeCombo");
@@ -283,11 +508,9 @@ public:
 
         questionLayout->addWidget(promptEdit, 2, 1, 1, 2);
 
-
-        basicLayout->addWidget(questionGroup);
-
         automationGroup = new QGroupBox(basicTab);
         automationGroup->setObjectName("automationGroup");
+        automationGroup->setGeometry(QRect(9, 395, 684, 209));
         automationLayout = new QGridLayout(automationGroup);
         automationLayout->setObjectName("automationLayout");
         loopCountLabel = new QLabel(automationGroup);
@@ -312,7 +535,7 @@ public:
         timeoutSpin->setObjectName("timeoutSpin");
         timeoutSpin->setMinimum(10);
         timeoutSpin->setMaximum(300000);
-        timeoutSpin->setValue(30000);
+        timeoutSpin->setValue(50);
 
         automationLayout->addWidget(timeoutSpin, 0, 3, 1, 1);
 
@@ -325,7 +548,7 @@ public:
         delaySpin->setObjectName("delaySpin");
         delaySpin->setMinimum(10);
         delaySpin->setMaximum(60000);
-        delaySpin->setValue(5000);
+        delaySpin->setValue(50);
 
         automationLayout->addWidget(delaySpin, 1, 1, 1, 1);
 
@@ -341,70 +564,32 @@ public:
 
         automationLayout->addWidget(continueOnTimeoutCheck, 2, 1, 1, 1);
 
-        keyboardInputRadio = new QRadioButton(automationGroup);
-        keyboardInputRadio->setObjectName("keyboardInputRadio");
-        keyboardInputRadio->setChecked(true);
+        keyboardInputCheck = new QCheckBox(automationGroup);
+        keyboardInputCheck->setObjectName("keyboardInputCheck");
+        keyboardInputCheck->setChecked(true);
 
-        automationLayout->addWidget(keyboardInputRadio, 3, 0, 1, 2);
+        automationLayout->addWidget(keyboardInputCheck, 3, 0, 1, 2);
 
-        pasteInputRadio = new QRadioButton(automationGroup);
-        pasteInputRadio->setObjectName("pasteInputRadio");
+        pasteInputCheck = new QCheckBox(automationGroup);
+        pasteInputCheck->setObjectName("pasteInputCheck");
 
-        automationLayout->addWidget(pasteInputRadio, 3, 2, 1, 2);
+        automationLayout->addWidget(pasteInputCheck, 3, 2, 1, 2);
 
         inputMethodHintLabel = new QLabel(automationGroup);
         inputMethodHintLabel->setObjectName("inputMethodHintLabel");
-        inputMethodHintLabel->setStyleSheet(QString::fromUtf8("font-size: 10pt; color: #e67e22; font-weight: bold;"));
+        inputMethodHintLabel->setStyleSheet(QString::fromUtf8("font-size: 12px; color: #e67e22; font-weight: 500;"));
         inputMethodHintLabel->setWordWrap(true);
 
         automationLayout->addWidget(inputMethodHintLabel, 4, 0, 1, 4);
 
-
-        basicLayout->addWidget(automationGroup);
-
-        buttonLayout = new QHBoxLayout();
-        buttonLayout->setObjectName("buttonLayout");
-        startButton = new QPushButton(basicTab);
-        startButton->setObjectName("startButton");
-        startButton->setMinimumSize(QSize(150, 40));
-
-        buttonLayout->addWidget(startButton);
-
-        stopButton = new QPushButton(basicTab);
-        stopButton->setObjectName("stopButton");
-        stopButton->setEnabled(false);
-        stopButton->setMinimumSize(QSize(120, 40));
-        stopButton->setStyleSheet(QString::fromUtf8("color: rgb(0, 0, 0);\n"
-" background-color: rgb(255, 255, 255);"));
-
-        buttonLayout->addWidget(stopButton);
-
-        horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
-
-        buttonLayout->addItem(horizontalSpacer);
-
-        saveConfigButton = new QPushButton(basicTab);
-        saveConfigButton->setObjectName("saveConfigButton");
-        saveConfigButton->setMinimumSize(QSize(100, 35));
-
-        buttonLayout->addWidget(saveConfigButton);
-
-        loadConfigButton = new QPushButton(basicTab);
-        loadConfigButton->setObjectName("loadConfigButton");
-        loadConfigButton->setMinimumSize(QSize(100, 35));
-
-        buttonLayout->addWidget(loadConfigButton);
-
-
-        basicLayout->addLayout(buttonLayout);
-
         statusGroup = new QGroupBox(basicTab);
         statusGroup->setObjectName("statusGroup");
+        statusGroup->setGeometry(QRect(9, 687, 681, 165));
         statusLayout = new QVBoxLayout(statusGroup);
         statusLayout->setObjectName("statusLayout");
         statusLabel = new QLabel(statusGroup);
         statusLabel->setObjectName("statusLabel");
-        statusLabel->setStyleSheet(QString::fromUtf8("font-weight: bold; color: #2ecc71;"));
+        statusLabel->setStyleSheet(QString::fromUtf8("font-weight: 600; color: #2ecc71;"));
 
         statusLayout->addWidget(statusLabel);
 
@@ -415,20 +600,71 @@ public:
 
         progressBar = new QProgressBar(statusGroup);
         progressBar->setObjectName("progressBar");
+        progressBar->setMinimumSize(QSize(0, 25));
         progressBar->setValue(0);
 
         statusLayout->addWidget(progressBar);
 
+        themeSelectLayout = new QHBoxLayout();
+        themeSelectLayout->setObjectName("themeSelectLayout");
+        themeSelectLabel = new QLabel(statusGroup);
+        themeSelectLabel->setObjectName("themeSelectLabel");
 
-        basicLayout->addWidget(statusGroup);
+        themeSelectLayout->addWidget(themeSelectLabel);
+
+        themeCombo = new QComboBox(statusGroup);
+        themeCombo->addItem(QString());
+        themeCombo->addItem(QString());
+        themeCombo->addItem(QString());
+        themeCombo->addItem(QString());
+        themeCombo->addItem(QString());
+        themeCombo->setObjectName("themeCombo");
+        themeCombo->setMinimumSize(QSize(120, 0));
+
+        themeSelectLayout->addWidget(themeCombo);
+
+
+        statusLayout->addLayout(themeSelectLayout);
+
+        layoutWidget = new QWidget(basicTab);
+        layoutWidget->setObjectName("layoutWidget");
+        layoutWidget->setGeometry(QRect(10, 620, 681, 66));
+        horizontalLayout = new QHBoxLayout(layoutWidget);
+        horizontalLayout->setObjectName("horizontalLayout");
+        horizontalLayout->setContentsMargins(0, 0, 0, 0);
+        startButton = new QPushButton(layoutWidget);
+        startButton->setObjectName("startButton");
+        startButton->setMinimumSize(QSize(228, 44));
+
+        horizontalLayout->addWidget(startButton);
+
+        stopButton = new QPushButton(layoutWidget);
+        stopButton->setObjectName("stopButton");
+
+        horizontalLayout->addWidget(stopButton);
+
+        horizontalSpacer_2 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+
+        horizontalLayout->addItem(horizontalSpacer_2);
+
+        saveConfigButton = new QPushButton(layoutWidget);
+        saveConfigButton->setObjectName("saveConfigButton");
+        saveConfigButton->setMinimumSize(QSize(100, 44));
+
+        horizontalLayout->addWidget(saveConfigButton);
+
+        loadConfigButton = new QPushButton(layoutWidget);
+        loadConfigButton->setObjectName("loadConfigButton");
+        loadConfigButton->setMinimumSize(QSize(100, 44));
+
+        horizontalLayout->addWidget(loadConfigButton);
 
         tabWidget->addTab(basicTab, QString());
         advancedTab = new QWidget();
         advancedTab->setObjectName("advancedTab");
-        advancedLayout = new QVBoxLayout(advancedTab);
-        advancedLayout->setObjectName("advancedLayout");
         pathConfigGroup = new QGroupBox(advancedTab);
         pathConfigGroup->setObjectName("pathConfigGroup");
+        pathConfigGroup->setGeometry(QRect(9, 9, 681, 247));
         pathConfigLayout = new QGridLayout(pathConfigGroup);
         pathConfigLayout->setObjectName("pathConfigLayout");
         configPathLabel = new QLabel(pathConfigGroup);
@@ -444,7 +680,7 @@ public:
 
         configPathBrowseButton = new QPushButton(pathConfigGroup);
         configPathBrowseButton->setObjectName("configPathBrowseButton");
-        configPathBrowseButton->setMinimumSize(QSize(80, 25));
+        configPathBrowseButton->setMinimumSize(QSize(80, 44));
 
         pathConfigLayout->addWidget(configPathBrowseButton, 0, 2, 1, 1);
 
@@ -460,7 +696,7 @@ public:
 
         keywordPathBrowseButton = new QPushButton(pathConfigGroup);
         keywordPathBrowseButton->setObjectName("keywordPathBrowseButton");
-        keywordPathBrowseButton->setMinimumSize(QSize(80, 25));
+        keywordPathBrowseButton->setMinimumSize(QSize(80, 44));
 
         pathConfigLayout->addWidget(keywordPathBrowseButton, 1, 2, 1, 1);
 
@@ -476,7 +712,7 @@ public:
 
         logPathBrowseButton = new QPushButton(pathConfigGroup);
         logPathBrowseButton->setObjectName("logPathBrowseButton");
-        logPathBrowseButton->setMinimumSize(QSize(80, 25));
+        logPathBrowseButton->setMinimumSize(QSize(80, 44));
 
         pathConfigLayout->addWidget(logPathBrowseButton, 2, 2, 1, 1);
 
@@ -492,21 +728,19 @@ public:
 
         templatePathBrowseButton = new QPushButton(pathConfigGroup);
         templatePathBrowseButton->setObjectName("templatePathBrowseButton");
-        templatePathBrowseButton->setMinimumSize(QSize(80, 25));
+        templatePathBrowseButton->setMinimumSize(QSize(80, 44));
 
         pathConfigLayout->addWidget(templatePathBrowseButton, 3, 2, 1, 1);
 
         resetAllPathsButton = new QPushButton(pathConfigGroup);
         resetAllPathsButton->setObjectName("resetAllPathsButton");
-        resetAllPathsButton->setMinimumSize(QSize(120, 35));
+        resetAllPathsButton->setMinimumSize(QSize(120, 44));
 
         pathConfigLayout->addWidget(resetAllPathsButton, 4, 0, 1, 3);
 
-
-        advancedLayout->addWidget(pathConfigGroup);
-
         recognitionGroup = new QGroupBox(advancedTab);
         recognitionGroup->setObjectName("recognitionGroup");
+        recognitionGroup->setGeometry(QRect(9, 262, 681, 152));
         recognitionLayout = new QGridLayout(recognitionGroup);
         recognitionLayout->setObjectName("recognitionLayout");
         thresholdLabel = new QLabel(recognitionGroup);
@@ -546,7 +780,7 @@ public:
         pageTimeoutSpin->setObjectName("pageTimeoutSpin");
         pageTimeoutSpin->setMinimum(10);
         pageTimeoutSpin->setMaximum(300000);
-        pageTimeoutSpin->setValue(10000);
+        pageTimeoutSpin->setValue(50);
 
         recognitionLayout->addWidget(pageTimeoutSpin, 1, 1, 1, 1);
 
@@ -559,7 +793,7 @@ public:
         recognitionTimeoutSpin->setObjectName("recognitionTimeoutSpin");
         recognitionTimeoutSpin->setMinimum(10);
         recognitionTimeoutSpin->setMaximum(300000);
-        recognitionTimeoutSpin->setValue(10000);
+        recognitionTimeoutSpin->setValue(50);
 
         recognitionLayout->addWidget(recognitionTimeoutSpin, 1, 3, 1, 1);
 
@@ -568,11 +802,9 @@ public:
 
         recognitionLayout->addWidget(recognitionTechniqueLabel, 2, 0, 1, 4);
 
-
-        advancedLayout->addWidget(recognitionGroup);
-
         monitorGroup = new QGroupBox(advancedTab);
         monitorGroup->setObjectName("monitorGroup");
+        monitorGroup->setGeometry(QRect(9, 420, 681, 85));
         monitorLayout = new QGridLayout(monitorGroup);
         monitorLayout->setObjectName("monitorLayout");
         multiMonitorCheck = new QCheckBox(monitorGroup);
@@ -593,61 +825,90 @@ public:
 
         monitorLayout->addWidget(primaryMonitorSpin, 0, 2, 1, 1);
 
+        shortcutGroup = new QGroupBox(advancedTab);
+        shortcutGroup->setObjectName("shortcutGroup");
+        shortcutGroup->setGeometry(QRect(10, 520, 681, 82));
+        shortcutGroupLayout = new QHBoxLayout(shortcutGroup);
+        shortcutGroupLayout->setObjectName("shortcutGroupLayout");
+        screenshotShortcutLabel = new QLabel(shortcutGroup);
+        screenshotShortcutLabel->setObjectName("screenshotShortcutLabel");
 
-        advancedLayout->addWidget(monitorGroup);
+        shortcutGroupLayout->addWidget(screenshotShortcutLabel);
 
-        advancedButtonLayout = new QHBoxLayout();
+        screenshotShortcutEdit = new QKeySequenceEdit(shortcutGroup);
+        screenshotShortcutEdit->setObjectName("screenshotShortcutEdit");
+        screenshotShortcutEdit->setMaximumSize(QSize(120, 16777215));
+
+        shortcutGroupLayout->addWidget(screenshotShortcutEdit);
+
+        applyShortcutButton = new QPushButton(shortcutGroup);
+        applyShortcutButton->setObjectName("applyShortcutButton");
+        applyShortcutButton->setMaximumSize(QSize(60, 16777215));
+
+        shortcutGroupLayout->addWidget(applyShortcutButton);
+
+        closeBehaviorLabel = new QLabel(shortcutGroup);
+        closeBehaviorLabel->setObjectName("closeBehaviorLabel");
+
+        shortcutGroupLayout->addWidget(closeBehaviorLabel);
+
+        closeBehaviorCombo = new QComboBox(shortcutGroup);
+        closeBehaviorCombo->addItem(QString());
+        closeBehaviorCombo->addItem(QString());
+        closeBehaviorCombo->setObjectName("closeBehaviorCombo");
+
+        shortcutGroupLayout->addWidget(closeBehaviorCombo);
+
+        shortcutSpacer = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+
+        shortcutGroupLayout->addItem(shortcutSpacer);
+
+        layoutWidget1 = new QWidget(advancedTab);
+        layoutWidget1->setObjectName("layoutWidget1");
+        layoutWidget1->setGeometry(QRect(9, 712, 681, 46));
+        advancedButtonLayout = new QHBoxLayout(layoutWidget1);
         advancedButtonLayout->setObjectName("advancedButtonLayout");
+        advancedButtonLayout->setContentsMargins(0, 0, 0, 0);
         advancedButtonSpacer = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
 
         advancedButtonLayout->addItem(advancedButtonSpacer);
 
-        saveAdvancedConfigButton = new QPushButton(advancedTab);
+        saveAdvancedConfigButton = new QPushButton(layoutWidget1);
         saveAdvancedConfigButton->setObjectName("saveAdvancedConfigButton");
-        saveAdvancedConfigButton->setMinimumSize(QSize(100, 35));
+        saveAdvancedConfigButton->setMinimumSize(QSize(100, 44));
 
         advancedButtonLayout->addWidget(saveAdvancedConfigButton);
 
-        loadAdvancedConfigButton = new QPushButton(advancedTab);
+        loadAdvancedConfigButton = new QPushButton(layoutWidget1);
         loadAdvancedConfigButton->setObjectName("loadAdvancedConfigButton");
-        loadAdvancedConfigButton->setMinimumSize(QSize(100, 35));
+        loadAdvancedConfigButton->setMinimumSize(QSize(100, 44));
 
         advancedButtonLayout->addWidget(loadAdvancedConfigButton);
-
-
-        advancedLayout->addLayout(advancedButtonLayout);
-
-        advancedSpacer = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
-
-        advancedLayout->addItem(advancedSpacer);
 
         tabWidget->addTab(advancedTab, QString());
         logTab = new QWidget();
         logTab->setObjectName("logTab");
-        logLayout = new QVBoxLayout(logTab);
-        logLayout->setObjectName("logLayout");
         logTextEdit = new QTextEdit(logTab);
         logTextEdit->setObjectName("logTextEdit");
-        logTextEdit->setStyleSheet(QString::fromUtf8("font-family: 'Consolas', 'Monaco', monospace; font-size: 9pt;\n"
-"color: rgb(243, 243, 243);background-color: #007aff\n"
-""));
+        logTextEdit->setGeometry(QRect(9, 9, 681, 671));
         logTextEdit->setReadOnly(true);
-
-        logLayout->addWidget(logTextEdit);
-
-        logButtonLayout = new QVBoxLayout();
+        layoutWidget2 = new QWidget(logTab);
+        layoutWidget2->setObjectName("layoutWidget2");
+        layoutWidget2->setGeometry(QRect(10, 690, 681, 91));
+        logButtonLayout = new QVBoxLayout(layoutWidget2);
         logButtonLayout->setObjectName("logButtonLayout");
+        logButtonLayout->setContentsMargins(0, 0, 0, 0);
         logButtons = new QHBoxLayout();
         logButtons->setObjectName("logButtons");
-        exportLogButton = new QPushButton(logTab);
+        exportLogButton = new QPushButton(layoutWidget2);
         exportLogButton->setObjectName("exportLogButton");
-        exportLogButton->setMinimumSize(QSize(120, 35));
+        exportLogButton->setMinimumSize(QSize(120, 44));
 
         logButtons->addWidget(exportLogButton);
 
-        clearLogButton = new QPushButton(logTab);
+        clearLogButton = new QPushButton(layoutWidget2);
         clearLogButton->setObjectName("clearLogButton");
-        clearLogButton->setMinimumSize(QSize(120, 35));
+        clearLogButton->setMinimumSize(QSize(120, 44));
 
         logButtons->addWidget(clearLogButton);
 
@@ -658,22 +919,18 @@ public:
 
         logButtonLayout->addLayout(logButtons);
 
-        logSavePathLabel = new QLabel(logTab);
+        logSavePathLabel = new QLabel(layoutWidget2);
         logSavePathLabel->setObjectName("logSavePathLabel");
-        logSavePathLabel->setStyleSheet(QString::fromUtf8("font-size: 9pt; color: #666666;"));
+        logSavePathLabel->setStyleSheet(QString::fromUtf8("font-size: 12px; color: #666666;"));
 
         logButtonLayout->addWidget(logSavePathLabel);
-
-
-        logLayout->addLayout(logButtonLayout);
 
         tabWidget->addTab(logTab, QString());
         iconTab = new QWidget();
         iconTab->setObjectName("iconTab");
-        iconLayout = new QVBoxLayout(iconTab);
-        iconLayout->setObjectName("iconLayout");
         iconGroup = new QGroupBox(iconTab);
         iconGroup->setObjectName("iconGroup");
+        iconGroup->setGeometry(QRect(9, 9, 681, 501));
         iconGridLayout = new QGridLayout(iconGroup);
         iconGridLayout->setObjectName("iconGridLayout");
         iconNameLabel = new QLabel(iconGroup);
@@ -712,8 +969,6 @@ public:
         browseIconButton = new QPushButton(iconGroup);
         browseIconButton->setObjectName("browseIconButton");
         browseIconButton->setMaximumSize(QSize(80, 16777215));
-        browseIconButton->setStyleSheet(QString::fromUtf8("font-size: 10pt; background-color: #607D8B; color: white; border-radius: 4px; padding: 4px 8px; border: none;\n"
-"QPushButton:pressed { background-color: #455A64; transform: translateY(1px); }"));
 
         iconGridLayout->addWidget(browseIconButton, 1, 2, 1, 1);
 
@@ -732,7 +987,7 @@ public:
         currentIconPreviewLabel->setEnabled(true);
         currentIconPreviewLabel->setMinimumSize(QSize(150, 100));
         currentIconPreviewLabel->setMaximumSize(QSize(150, 100));
-        currentIconPreviewLabel->setStyleSheet(QString::fromUtf8("background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 4px;"));
+        currentIconPreviewLabel->setStyleSheet(QString::fromUtf8("background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 0px;"));
         currentIconPreviewLabel->setAlignment(Qt::AlignmentFlag::AlignCenter);
 
         currentIconLayout->addWidget(currentIconPreviewLabel, 0, Qt::AlignmentFlag::AlignHCenter);
@@ -752,7 +1007,7 @@ public:
         selectedIconPreviewLabel->setObjectName("selectedIconPreviewLabel");
         selectedIconPreviewLabel->setMinimumSize(QSize(150, 100));
         selectedIconPreviewLabel->setMaximumSize(QSize(150, 100));
-        selectedIconPreviewLabel->setStyleSheet(QString::fromUtf8("background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 4px;"));
+        selectedIconPreviewLabel->setStyleSheet(QString::fromUtf8("background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 0px;"));
         selectedIconPreviewLabel->setAlignment(Qt::AlignmentFlag::AlignCenter);
 
         selectedIconLayout->addWidget(selectedIconPreviewLabel, 0, Qt::AlignmentFlag::AlignHCenter);
@@ -767,13 +1022,13 @@ public:
         iconButtonLayout->setObjectName("iconButtonLayout");
         saveIconButton = new QPushButton(iconGroup);
         saveIconButton->setObjectName("saveIconButton");
-        saveIconButton->setMinimumSize(QSize(120, 35));
+        saveIconButton->setMinimumSize(QSize(120, 44));
 
         iconButtonLayout->addWidget(saveIconButton);
 
         resetIconButton = new QPushButton(iconGroup);
         resetIconButton->setObjectName("resetIconButton");
-        resetIconButton->setMinimumSize(QSize(120, 35));
+        resetIconButton->setMinimumSize(QSize(120, 44));
 
         iconButtonLayout->addWidget(resetIconButton);
 
@@ -784,20 +1039,12 @@ public:
 
         iconGridLayout->addLayout(iconButtonLayout, 3, 0, 1, 3);
 
-
-        iconLayout->addWidget(iconGroup);
-
-        iconTabSpacer = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
-
-        iconLayout->addItem(iconTabSpacer);
-
         tabWidget->addTab(iconTab, QString());
         aboutTab = new QWidget();
         aboutTab->setObjectName("aboutTab");
-        aboutLayout = new QVBoxLayout(aboutTab);
-        aboutLayout->setObjectName("aboutLayout");
         supportGroup = new QGroupBox(aboutTab);
         supportGroup->setObjectName("supportGroup");
+        supportGroup->setGeometry(QRect(9, 9, 684, 244));
         supportLayout = new QVBoxLayout(supportGroup);
         supportLayout->setObjectName("supportLayout");
         donationTextLabel = new QLabel(supportGroup);
@@ -849,11 +1096,9 @@ public:
 
         supportLayout->addLayout(qrCodeLayout);
 
-
-        aboutLayout->addWidget(supportGroup);
-
         authorGroup = new QGroupBox(aboutTab);
         authorGroup->setObjectName("authorGroup");
+        authorGroup->setGeometry(QRect(9, 259, 681, 301));
         authorLayout = new QVBoxLayout(authorGroup);
         authorLayout->setObjectName("authorLayout");
         authorNameLabel = new QLabel(authorGroup);
@@ -874,7 +1119,7 @@ public:
 
         visitWebsiteButton = new QPushButton(authorGroup);
         visitWebsiteButton->setObjectName("visitWebsiteButton");
-        visitWebsiteButton->setMinimumSize(QSize(150, 35));
+        visitWebsiteButton->setMinimumSize(QSize(150, 44));
 
         authorLayout->addWidget(visitWebsiteButton);
 
@@ -894,77 +1139,40 @@ public:
 
         authorLayout->addWidget(versionLabel);
 
-
-        aboutLayout->addWidget(authorGroup);
-
-        themeGroup = new QGroupBox(aboutTab);
-        themeGroup->setObjectName("themeGroup");
-        themeLayout = new QVBoxLayout(themeGroup);
-        themeLayout->setObjectName("themeLayout");
-        themeLabel = new QLabel(themeGroup);
-        themeLabel->setObjectName("themeLabel");
-
-        themeLayout->addWidget(themeLabel);
-
-        themeButtonLayout = new QHBoxLayout();
-        themeButtonLayout->setObjectName("themeButtonLayout");
-        lightThemeButton = new QPushButton(themeGroup);
-        lightThemeButton->setObjectName("lightThemeButton");
-        lightThemeButton->setMinimumSize(QSize(100, 35));
-
-        themeButtonLayout->addWidget(lightThemeButton);
-
-        darkThemeButton = new QPushButton(themeGroup);
-        darkThemeButton->setObjectName("darkThemeButton");
-        darkThemeButton->setMinimumSize(QSize(100, 35));
-
-        themeButtonLayout->addWidget(darkThemeButton);
-
-        techThemeButton = new QPushButton(themeGroup);
-        techThemeButton->setObjectName("techThemeButton");
-        techThemeButton->setMinimumSize(QSize(100, 35));
-
-        themeButtonLayout->addWidget(techThemeButton);
-
-
-        themeLayout->addLayout(themeButtonLayout);
-
-
-        aboutLayout->addWidget(themeGroup);
-
         tabWidget->addTab(aboutTab, QString());
 
         mainLayout->addWidget(tabWidget);
 
-        MainWindow->setCentralWidget(centralwidget);
 
         retranslateUi(MainWindow);
 
-        tabWidget->setCurrentIndex(4);
+        tabWidget->setCurrentIndex(0);
 
 
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi
 
-    void retranslateUi(QMainWindow *MainWindow)
+    void retranslateUi(QWidget *MainWindow)
     {
         MainWindow->setWindowTitle(QCoreApplication::translate("MainWindow", "WeBot - \344\274\201\344\270\232\345\276\256\344\277\241\350\207\252\345\212\250\351\227\256\347\255\224\345\267\245\345\205\267", nullptr));
         titleLabel->setText(QCoreApplication::translate("MainWindow", "\360\237\244\226 WeBot - \344\274\201\344\270\232\345\276\256\344\277\241\350\207\252\345\212\250\351\227\256\347\255\224\345\267\245\345\205\267", nullptr));
         wechatGroup->setTitle(QCoreApplication::translate("MainWindow", "\344\274\201\344\270\232\345\276\256\344\277\241\350\256\276\347\275\256", nullptr));
-        wechatPathLabel->setText(QCoreApplication::translate("MainWindow", "\344\274\201\344\270\232\345\276\256\344\277\241\350\267\257\345\276\204:", nullptr));
-        wechatPathEdit->setPlaceholderText(QCoreApplication::translate("MainWindow", "\350\257\267\351\200\211\346\213\251\344\274\201\344\270\232\345\276\256\344\277\241\345\256\211\350\243\205\350\267\257\345\276\204", nullptr));
-        browseWechatButton->setText(QCoreApplication::translate("MainWindow", "\346\265\217\350\247\210...", nullptr));
-        topMostCheck->setText(QCoreApplication::translate("MainWindow", "\347\252\227\345\217\243\347\275\256\351\241\266\346\230\276\347\244\272", nullptr));
         floatingWindowCheck->setText(QCoreApplication::translate("MainWindow", "\345\220\257\347\224\250\346\202\254\346\265\256\347\252\227", nullptr));
+        browseWechatButton->setText(QCoreApplication::translate("MainWindow", "\346\265\217\350\247\210...", nullptr));
+        wechatPathEdit->setPlaceholderText(QCoreApplication::translate("MainWindow", "\350\257\267\351\200\211\346\213\251\344\274\201\344\270\232\345\276\256\344\277\241\345\256\211\350\243\205\350\267\257\345\276\204", nullptr));
+        topMostCheck->setText(QCoreApplication::translate("MainWindow", "\347\252\227\345\217\243\347\275\256\351\241\266\346\230\276\347\244\272", nullptr));
+        wechatPathLabel->setText(QCoreApplication::translate("MainWindow", "\344\274\201\344\270\232\345\276\256\344\277\241\350\267\257\345\276\204:", nullptr));
         questionGroup->setTitle(QCoreApplication::translate("MainWindow", "\351\227\256\351\242\230\350\256\276\347\275\256", nullptr));
         questionPathLabel->setText(QCoreApplication::translate("MainWindow", "\351\227\256\351\242\230\345\272\223\350\267\257\345\276\204:", nullptr));
         questionPathEdit->setPlaceholderText(QCoreApplication::translate("MainWindow", "\350\257\267\351\200\211\346\213\251\351\227\256\351\242\230\345\272\223\346\226\207\344\273\266", nullptr));
         browseQuestionsButton->setText(QCoreApplication::translate("MainWindow", "\346\265\217\350\247\210...", nullptr));
         questionModeLabel->setText(QCoreApplication::translate("MainWindow", "\351\227\256\351\242\230\346\250\241\345\274\217:", nullptr));
-        questionModeCombo->setItemText(0, QCoreApplication::translate("MainWindow", "\345\276\252\347\216\257\344\275\277\347\224\250\351\242\204\350\256\276\351\227\256\351\242\230", nullptr));
-        questionModeCombo->setItemText(1, QCoreApplication::translate("MainWindow", "\351\232\217\346\234\272\344\275\277\347\224\250\351\242\204\350\256\276\351\227\256\351\242\230", nullptr));
-        questionModeCombo->setItemText(2, QCoreApplication::translate("MainWindow", "\350\207\252\345\212\250\347\224\237\346\210\220\351\227\256\351\242\230", nullptr));
+        questionModeCombo->setItemText(0, QCoreApplication::translate("MainWindow", "\360\237\224\204 \351\241\272\345\272\217\345\276\252\347\216\257 - \346\214\211\351\227\256\351\242\230\345\272\223\351\241\272\345\272\217\351\200\220\344\270\200\344\275\277\347\224\250", nullptr));
+        questionModeCombo->setItemText(1, QCoreApplication::translate("MainWindow", "\360\237\216\262 \351\232\217\346\234\272\351\200\211\346\213\251 - \344\273\216\351\227\256\351\242\230\345\272\223\344\270\255\351\232\217\346\234\272\346\214\221\351\200\211", nullptr));
 
+#if QT_CONFIG(tooltip)
+        questionModeCombo->setToolTip(QCoreApplication::translate("MainWindow", "\351\200\211\346\213\251\351\227\256\351\242\230\345\233\236\347\255\224\347\232\204\346\226\271\345\274\217", nullptr));
+#endif // QT_CONFIG(tooltip)
         promptLabel->setText(QCoreApplication::translate("MainWindow", "\345\233\236\347\255\224\351\231\220\345\210\266\346\217\220\347\244\272:", nullptr));
         promptEdit->setPlaceholderText(QCoreApplication::translate("MainWindow", "\345\233\236\347\255\224\350\257\267\345\213\277\350\266\205\350\277\207\345\215\201\344\270\252\345\255\227", nullptr));
         automationGroup->setTitle(QCoreApplication::translate("MainWindow", "\350\207\252\345\212\250\345\214\226\350\256\276\347\275\256", nullptr));
@@ -973,11 +1181,21 @@ public:
         delayLabel->setText(QCoreApplication::translate("MainWindow", "\350\275\256\346\254\241\351\227\264\351\232\224(\346\257\253\347\247\222):", nullptr));
         continueOnErrorCheck->setText(QCoreApplication::translate("MainWindow", "\345\207\272\351\224\231\346\227\266\347\273\247\347\273\255\346\211\247\350\241\214", nullptr));
         continueOnTimeoutCheck->setText(QCoreApplication::translate("MainWindow", "\350\266\205\346\227\266\345\220\216\347\273\247\347\273\255\346\211\247\350\241\214", nullptr));
-        keyboardInputRadio->setText(QCoreApplication::translate("MainWindow", "\346\250\241\346\213\237\351\224\256\347\233\230\351\200\220\344\270\252\350\276\223\345\205\245", nullptr));
-        pasteInputRadio->setText(QCoreApplication::translate("MainWindow", "\345\244\215\345\210\266\347\262\230\350\264\264\350\276\223\345\205\245", nullptr));
-        inputMethodHintLabel->setText(QCoreApplication::translate("MainWindow", "\360\237\222\241 \346\217\220\347\244\272\357\274\232\346\214\211\344\270\213ESC\346\214\211\351\224\256\345\217\257\345\201\234\346\255\242\350\207\252\345\212\250\345\214\226\346\211\247\350\241\214\357\274\214\346\250\241\346\213\237\351\224\256\347\233\230\350\276\223\345\205\245\344\270\215\345\217\257\347\224\250\346\227\266\345\217\257\345\210\207\346\215\242\345\244\215\345\210\266\347\262\230\350\264\264\350\276\223\345\205\245\343\200\202", nullptr));
+        keyboardInputCheck->setText(QCoreApplication::translate("MainWindow", "\346\250\241\346\213\237\351\224\256\347\233\230\351\200\220\344\270\252\350\276\223\345\205\245", nullptr));
+        pasteInputCheck->setText(QCoreApplication::translate("MainWindow", "\345\244\215\345\210\266\347\262\230\350\264\264\350\276\223\345\205\245", nullptr));
+        inputMethodHintLabel->setText(QCoreApplication::translate("MainWindow", "\360\237\222\241 \346\217\220\347\244\272\357\274\232\346\214\211\344\270\213ESC\346\214\211\351\224\256\345\217\257\345\201\234\346\255\242\350\207\252\345\212\250\345\214\226\346\211\247\350\241\214\357\274\214\351\200\211\346\213\251\345\220\210\351\200\202\347\232\204\350\276\223\345\205\245\346\226\271\345\274\217\357\274\210\345\217\252\350\203\275\351\200\211\346\213\251\344\270\200\347\247\215\357\274\211\343\200\202", nullptr));
+        statusGroup->setTitle(QCoreApplication::translate("MainWindow", "\350\277\220\350\241\214\347\212\266\346\200\201", nullptr));
+        statusLabel->setText(QCoreApplication::translate("MainWindow", "\347\212\266\346\200\201: \345\260\261\347\273\252", nullptr));
+        progressLabel->setText(QCoreApplication::translate("MainWindow", "\350\277\233\345\272\246: 0/0", nullptr));
+        themeSelectLabel->setText(QCoreApplication::translate("MainWindow", "\347\225\214\351\235\242\344\270\273\351\242\230:", nullptr));
+        themeCombo->setItemText(0, QCoreApplication::translate("MainWindow", "\346\265\205\350\211\262\344\270\273\351\242\230", nullptr));
+        themeCombo->setItemText(1, QCoreApplication::translate("MainWindow", "\346\267\261\350\211\262\344\270\273\351\242\230", nullptr));
+        themeCombo->setItemText(2, QCoreApplication::translate("MainWindow", "\346\250\261\350\212\261\344\270\273\351\242\230", nullptr));
+        themeCombo->setItemText(3, QCoreApplication::translate("MainWindow", "\347\247\221\346\212\200\344\270\273\351\242\230", nullptr));
+        themeCombo->setItemText(4, QCoreApplication::translate("MainWindow", "\346\232\226\350\211\262\344\270\273\351\242\230", nullptr));
+
         startButton->setText(QCoreApplication::translate("MainWindow", "\360\237\232\200 \345\274\200\345\247\213\350\207\252\345\212\250\351\227\256\347\255\224", nullptr));
-        stopButton->setText(QCoreApplication::translate("MainWindow", "\342\217\271\357\270\217 \345\201\234\346\255\242\346\211\247\350\241\214", nullptr));
+        stopButton->setText(QCoreApplication::translate("MainWindow", "  \342\217\271\357\270\217 \345\201\234\346\255\242\346\211\247\350\241\214     ", nullptr));
 #if QT_CONFIG(tooltip)
         saveConfigButton->setToolTip(QCoreApplication::translate("MainWindow", "\344\277\235\345\255\230\345\275\223\345\211\215\351\205\215\347\275\256\345\210\260\346\226\207\344\273\266", nullptr));
 #endif // QT_CONFIG(tooltip)
@@ -986,9 +1204,6 @@ public:
         loadConfigButton->setToolTip(QCoreApplication::translate("MainWindow", "\344\273\216\346\226\207\344\273\266\345\212\240\350\275\275\351\205\215\347\275\256", nullptr));
 #endif // QT_CONFIG(tooltip)
         loadConfigButton->setText(QCoreApplication::translate("MainWindow", "\360\237\223\202 \345\212\240\350\275\275\351\205\215\347\275\256", nullptr));
-        statusGroup->setTitle(QCoreApplication::translate("MainWindow", "\350\277\220\350\241\214\347\212\266\346\200\201", nullptr));
-        statusLabel->setText(QCoreApplication::translate("MainWindow", "\347\212\266\346\200\201: \345\260\261\347\273\252", nullptr));
-        progressLabel->setText(QCoreApplication::translate("MainWindow", "\350\277\233\345\272\246: 0/0", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(basicTab), QCoreApplication::translate("MainWindow", "\345\237\272\347\241\200\350\256\276\347\275\256", nullptr));
         pathConfigGroup->setTitle(QCoreApplication::translate("MainWindow", "\346\226\207\344\273\266\350\267\257\345\276\204\351\205\215\347\275\256", nullptr));
         configPathLabel->setText(QCoreApplication::translate("MainWindow", "\351\205\215\347\275\256\346\226\207\344\273\266\350\267\257\345\276\204:", nullptr));
@@ -1049,6 +1264,14 @@ public:
 #if QT_CONFIG(tooltip)
         primaryMonitorSpin->setToolTip(QCoreApplication::translate("MainWindow", "\344\274\201\344\270\232\345\276\256\344\277\241\346\211\200\345\234\250\347\232\204\346\230\276\347\244\272\345\231\250\347\264\242\345\274\225\357\274\214\344\273\2160\345\274\200\345\247\213\350\256\241\346\225\260", nullptr));
 #endif // QT_CONFIG(tooltip)
+        shortcutGroup->setTitle(QCoreApplication::translate("MainWindow", "\345\277\253\346\215\267\351\224\256\350\256\276\347\275\256", nullptr));
+        screenshotShortcutLabel->setText(QCoreApplication::translate("MainWindow", "\346\210\252\345\233\276\345\277\253\346\215\267\351\224\256:", nullptr));
+        screenshotShortcutEdit->setKeySequence(QCoreApplication::translate("MainWindow", "Ctrl+Shift+S", nullptr));
+        applyShortcutButton->setText(QCoreApplication::translate("MainWindow", "\345\272\224\347\224\250", nullptr));
+        closeBehaviorLabel->setText(QCoreApplication::translate("MainWindow", "\347\202\271\345\207\273\345\205\263\351\227\255\346\214\211\351\222\256\346\227\266\357\274\232", nullptr));
+        closeBehaviorCombo->setItemText(0, QCoreApplication::translate("MainWindow", "\346\234\200\345\260\217\345\214\226\345\210\260\347\263\273\347\273\237\346\211\230\347\233\230", nullptr));
+        closeBehaviorCombo->setItemText(1, QCoreApplication::translate("MainWindow", "\347\233\264\346\216\245\345\205\263\351\227\255", nullptr));
+
 #if QT_CONFIG(tooltip)
         saveAdvancedConfigButton->setToolTip(QCoreApplication::translate("MainWindow", "\344\277\235\345\255\230\345\275\223\345\211\215\351\253\230\347\272\247\351\205\215\347\275\256\345\210\260\346\226\207\344\273\266", nullptr));
 #endif // QT_CONFIG(tooltip)
@@ -1104,11 +1327,6 @@ public:
         visitWebsiteButton->setText(QCoreApplication::translate("MainWindow", "\360\237\214\220 \350\256\277\351\227\256\345\256\230\347\275\221", nullptr));
         copyrightLabel->setText(QCoreApplication::translate("MainWindow", "\302\251 2025 WeBot\345\274\200\345\217\221\350\200\205 \347\211\210\346\235\203\346\211\200\346\234\211", nullptr));
         versionLabel->setText(QCoreApplication::translate("MainWindow", "\347\211\210\346\234\254: v1.1.2", nullptr));
-        themeGroup->setTitle(QCoreApplication::translate("MainWindow", "\344\270\273\351\242\230\350\256\276\347\275\256", nullptr));
-        themeLabel->setText(QCoreApplication::translate("MainWindow", "\351\200\211\346\213\251\347\225\214\351\235\242\344\270\273\351\242\230\357\274\232", nullptr));
-        lightThemeButton->setText(QCoreApplication::translate("MainWindow", "\346\265\205\350\211\262\344\270\273\351\242\230", nullptr));
-        darkThemeButton->setText(QCoreApplication::translate("MainWindow", "\346\267\261\350\211\262\344\270\273\351\242\230", nullptr));
-        techThemeButton->setText(QCoreApplication::translate("MainWindow", "\347\247\221\346\212\200\344\270\273\351\242\230", nullptr));
         tabWidget->setTabText(tabWidget->indexOf(aboutTab), QCoreApplication::translate("MainWindow", "\345\205\263\344\272\216\344\275\234\350\200\205", nullptr));
     } // retranslateUi
 

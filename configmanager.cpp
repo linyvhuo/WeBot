@@ -114,7 +114,23 @@ void ConfigManager::initDefaultConfig()
     
     // 输入方式默认值
     inputMethod = 0; // 0表示键盘输入，1表示复制粘贴输入
-    
+
+    // 截图快捷键默认值
+    m_screenshotShortcut = "Ctrl+Shift+S";
+
+    // 关闭行为默认值
+    closeBehavior = MinimizeToTray; // 默认最小化到系统托盘
+
+    // 主题默认值
+    theme = 0; // 0表示浅色主题
+
+    // 悬浮窗默认值
+    floatingWindowX = 0;
+    floatingWindowY = 0;
+    floatingWindowWidth = 300;
+    floatingWindowHeight = 300;
+    floatingWindowVisible = true;
+
     // 新配置项默认值
     mouseClickDelay = 100; // 100毫秒
     keyboardInputDelay = 50; // 50毫秒
@@ -233,7 +249,20 @@ bool ConfigManager::loadConfig()
         
         // 读取输入方式设置
         inputMethod = settings.value("Advanced/InputMethod", inputMethod).toInt();
-        
+
+        // 读取关闭行为设置
+        closeBehavior = settings.value("Advanced/CloseBehavior", closeBehavior).toInt();
+
+        // 读取主题设置
+        theme = settings.value("General/Theme", theme).toInt();
+
+        // 读取悬浮窗设置
+        floatingWindowX = settings.value("FloatingWindow/X", floatingWindowX).toInt();
+        floatingWindowY = settings.value("FloatingWindow/Y", floatingWindowY).toInt();
+        floatingWindowWidth = settings.value("FloatingWindow/Width", floatingWindowWidth).toInt();
+        floatingWindowHeight = settings.value("FloatingWindow/Height", floatingWindowHeight).toInt();
+        floatingWindowVisible = settings.value("FloatingWindow/Visible", floatingWindowVisible).toBool();
+
         if (settings.status() != QSettings::NoError) {
             qDebug() << "加载配置时发生错误";
             emit logMessage("加载配置时发生错误");
@@ -335,7 +364,20 @@ bool ConfigManager::saveConfig()
         
         // 写入输入方式设置
         settings.setValue("Advanced/InputMethod", inputMethod);
-        
+
+        // 写入关闭行为设置
+        settings.setValue("Advanced/CloseBehavior", closeBehavior);
+
+        // 写入主题设置
+        settings.setValue("General/Theme", theme);
+
+        // 写入悬浮窗设置
+        settings.setValue("FloatingWindow/X", floatingWindowX);
+        settings.setValue("FloatingWindow/Y", floatingWindowY);
+        settings.setValue("FloatingWindow/Width", floatingWindowWidth);
+        settings.setValue("FloatingWindow/Height", floatingWindowHeight);
+        settings.setValue("FloatingWindow/Visible", floatingWindowVisible);
+
         // 同步设置到文件
         settings.sync();
         
@@ -839,6 +881,12 @@ void ConfigManager::setMouseInactivityTimeout(int timeout) {
     emit configChanged();
 }
 
+QString ConfigManager::getScreenshotShortcut() const { return m_screenshotShortcut; }
+void ConfigManager::setScreenshotShortcut(const QString &shortcut) {
+    m_screenshotShortcut = shortcut;
+    emit configChanged();
+}
+
 // 图标路径管理方法实现
 QString ConfigManager::getIconPath(const QString &iconName) const {
     if (iconPaths.contains(iconName)) {
@@ -972,5 +1020,68 @@ int ConfigManager::getInputMethod() const {
 
 void ConfigManager::setInputMethod(int method) {
     inputMethod = method;
+    emit configChanged();
+}
+
+int ConfigManager::getCloseBehavior() const {
+    return closeBehavior;
+}
+
+void ConfigManager::setCloseBehavior(int behavior) {
+    closeBehavior = behavior;
+    emit configChanged();
+}
+
+int ConfigManager::getTheme() const {
+    return theme;
+}
+
+void ConfigManager::setTheme(int theme) {
+    this->theme = theme;
+    emit configChanged();
+}
+
+int ConfigManager::getFloatingWindowX() const {
+    return floatingWindowX;
+}
+
+void ConfigManager::setFloatingWindowX(int x) {
+    floatingWindowX = x;
+    emit configChanged();
+}
+
+int ConfigManager::getFloatingWindowY() const {
+    return floatingWindowY;
+}
+
+void ConfigManager::setFloatingWindowY(int y) {
+    floatingWindowY = y;
+    emit configChanged();
+}
+
+int ConfigManager::getFloatingWindowWidth() const {
+    return floatingWindowWidth;
+}
+
+void ConfigManager::setFloatingWindowWidth(int width) {
+    floatingWindowWidth = width;
+    emit configChanged();
+}
+
+int ConfigManager::getFloatingWindowHeight() const {
+    return floatingWindowHeight;
+}
+
+void ConfigManager::setFloatingWindowHeight(int height) {
+    floatingWindowHeight = height;
+    emit configChanged();
+}
+
+bool ConfigManager::getFloatingWindowVisible() const {
+    return floatingWindowVisible;
+}
+
+void ConfigManager::setFloatingWindowVisible(bool visible) {
+    floatingWindowVisible = visible;
     emit configChanged();
 }

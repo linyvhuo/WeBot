@@ -9,6 +9,10 @@ debug/inputsimulator.o
 debug/questionmanager.o
 debug/recognitionoverlay.o
 debug/clickcapturewidget.o
+debug/floatingwindow.o
+debug/thememanager.o
+debug/screenshotselector.o
+debug/framelesswindow.o
 debug/qrc_resources.o
 debug/moc_mainwindow.o
 debug/moc_automator.o
@@ -20,3 +24,7 @@ debug/moc_inputsimulator.o
 debug/moc_questionmanager.o
 debug/moc_recognitionoverlay.o
 debug/moc_clickcapturewidget.o
+debug/moc_floatingwindow.o
+debug/moc_thememanager.o
+debug/moc_screenshotselector.o
+debug/moc_framelesswindow.o

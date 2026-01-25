@@ -1,7 +1,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QDoubleSpinBox>
@@ -19,14 +18,24 @@
 #include <QMouseEvent>
 #include <QTimer>
 #include <QPoint>
+#include <QtGlobal>
+#include "framelesswindow.h"
 #include "automator.h"
 #include "recognitionoverlay.h"
+#include "floatingwindow.h"
+#include "thememanager.h"
+#include "ocrmanager.h"
+#include "screenshotselector.h"
+
+#include <windows.h>
+#include <QSystemTrayIcon>
+#include <QMenu>
 
 namespace Ui {
 class MainWindow;
 }
 
-class MainWindow : public QMainWindow
+class MainWindow : public FramelessWindow
 {
     Q_OBJECT
 
@@ -68,6 +77,14 @@ private slots:
         void on_multiMonitorCheck_toggled(bool checked);
         void on_primaryMonitorSpin_valueChanged(int value);
 
+        void on_keyboardInputCheck_toggled(bool checked);
+        void on_pasteInputCheck_toggled(bool checked);
+
+
+
+        void on_themeCombo_currentIndexChanged(int index);
+        void on_applyShortcutButton_clicked();
+
     // 自动化状态变化
     void onAutomationStateChanged(Automator::State state);
 
@@ -101,13 +118,30 @@ private slots:
     // 错误提示槽函数
     void showErrorMessage(const QString &message);
 
+    // 截图相关方法
+    void registerScreenshotHotkey();
+    void unregisterScreenshotHotkey();
+    void takeScreenshot();
+    void processSelectedScreenshot(const QRect &selectedRect);
+    void showScreenshotPreview(const QPixmap &screenshot, const QString &filePath);
+    void openImageEditor(const QString &filePath, const QPixmap &screenshot);
 
+    // 系统托盘相关方法
+    void setupSystemTray();
+    void showFromTray();
+    void hideToTray();
 
 protected:
     // 重写键盘事件处理函数，用于处理ESC按键
     void keyPressEvent(QKeyEvent *event) override;
     // 重写事件过滤器
     bool eventFilter(QObject *obj, QEvent *event) override;
+    // 重写原生事件处理，用于处理全局热键
+    bool nativeEvent(const QByteArray &eventType, void *message, qintptr *result) override;
+    // 重写关闭事件，用于最小化到托盘
+    void closeEvent(QCloseEvent *event) override;
+    // 重写窗口大小改变事件，用于调整控件大小
+    void resizeEvent(QResizeEvent *event) override;
     
 public:
     // 获取日志内容
@@ -117,6 +151,10 @@ private:
     Ui::MainWindow *ui;
     Automator *automator = nullptr;
     RecognitionOverlay *recognitionOverlay = nullptr;
+    FloatingWindow *floatingWindow = nullptr;
+    QSystemTrayIcon *trayIcon = nullptr;
+    QMenu *trayMenu = nullptr;
+    ScreenshotSelector *screenshotSelector = nullptr;
     
 
 

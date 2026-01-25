@@ -4,6 +4,9 @@
 #include "configmanager.h"
 #include "automator.h"
 #include "clickcapturewidget.h"
+#include "floatingwindow.h"
+#include "thememanager.h"
+#include "screenshotselector.h"
 
 #include <QDateTime>
 #include <QMessageBox>
@@ -19,14 +22,20 @@
 #include <QStandardPaths>
 #include <QDesktopServices>
 #include <QUrl>
-
+#include <QScreen>
+#include <QPixmap>
+#include <QGuiApplication>
+#include <QClipboard>
+#include <QTextEdit>
+#include <QResizeEvent>
 
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+    : FramelessWindow(parent)
     , ui(new Ui::MainWindow)
     , automator(new Automator(this))
     , recognitionOverlay(nullptr)
+    , floatingWindow(new FloatingWindow(this))
 {
     // 安装事件过滤器，拦截样式表解析错误
     qApp->installEventFilter(this);
@@ -37,47 +46,6 @@ MainWindow::MainWindow(QWidget *parent)
     this->setFocusPolicy(Qt::StrongFocus);
     this->activateWindow();
     this->setFocus();
-
-    // 直接处理每个按钮，避免使用QList和findChildren，解决Qt版本兼容性问题
-    ui->browseWechatButton->setStyleSheet("");
-    ui->browseQuestionsButton->setStyleSheet("");
-    ui->startButton->setStyleSheet("");
-    ui->stopButton->setStyleSheet("");
-    ui->saveConfigButton->setStyleSheet("");
-    ui->loadConfigButton->setStyleSheet("");
-    ui->exportLogButton->setStyleSheet("");
-    ui->clearLogButton->setStyleSheet("");
-    ui->browseIconButton->setStyleSheet("");
-    ui->saveIconButton->setStyleSheet("");
-    ui->resetIconButton->setStyleSheet("");
-    
-    // 重新设置按钮的文本，确保按钮显示正确
-    ui->browseWechatButton->setText("浏览...");
-    ui->browseQuestionsButton->setText("浏览...");
-    ui->startButton->setText("🚀 开始自动问答");
-    ui->stopButton->setText("⏹️ 停止执行");
-    ui->stopButton->setShortcut(QKeySequence(Qt::Key_Escape));
-    ui->stopButton->setToolTip("快捷键: ESC");
-    ui->saveConfigButton->setText("💾 保存配置");
-    ui->loadConfigButton->setText("📂 加载配置");
-    ui->exportLogButton->setText("📤 导出日志");
-    ui->clearLogButton->setText("🗑️ 清空日志");
-    ui->browseIconButton->setText("浏览...");
-    ui->saveIconButton->setText("💾 保存图标配置");
-    ui->resetIconButton->setText("🔄 重置为默认");
-    
-    // 重新设置按钮的大小策略，确保按钮大小合适
-    ui->browseWechatButton->setMinimumSize(80, 25);
-    ui->browseQuestionsButton->setMinimumSize(80, 25);
-    ui->startButton->setMinimumSize(150, 40);
-    ui->stopButton->setMinimumSize(120, 40);
-    ui->saveConfigButton->setMinimumSize(100, 35);
-    ui->loadConfigButton->setMinimumSize(100, 35);
-    ui->exportLogButton->setMinimumSize(120, 35);
-    ui->clearLogButton->setMinimumSize(120, 35);
-    ui->browseIconButton->setMinimumSize(80, 25);
-    ui->saveIconButton->setMinimumSize(120, 35);
-    ui->resetIconButton->setMinimumSize(120, 35);
 
     try {
         // 先初始化日志系统
@@ -93,7 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
         
         // 延迟初始化ConfigManager，确保信号已经连接
         config->initialize();
-        
+
         // 设置日志路径
         QString logFolderPath = config->getLogPath();
         Logger::getInstance()->setLogPath(logFolderPath);
@@ -115,72 +83,54 @@ MainWindow::MainWindow(QWidget *parent)
         connect(automator, &Automator::automationCompleted, this, &MainWindow::onAutomationCompleted);
         connect(automator, &Automator::errorMessage, this, &MainWindow::showErrorMessage);
         
-        // 连接标签页切换信号
-        connect(ui->tabWidget, &QTabWidget::currentChanged, this, &MainWindow::onTabChanged);
+    // 连接标签页切换信号
+    connect(ui->tabWidget, &QTabWidget::currentChanged, this, &MainWindow::onTabChanged);
 
-        // 加载配置到UI
-        loadConfigToUI();
+    // 连接悬浮窗停止信号
+    connect(floatingWindow, &FloatingWindow::stopRequested, this, &MainWindow::on_stopButton_clicked);
+
+    // 连接主题变化信号
+    ThemeManager *themeManager = ThemeManager::getInstance();
+    connect(themeManager, &ThemeManager::themeChanged, floatingWindow, &FloatingWindow::onThemeChanged);
+
+    // 连接主题选择下拉框
+    connect(ui->themeCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, &MainWindow::on_themeCombo_currentIndexChanged);
+
+    // 连接关闭行为选择下拉框
+    connect(ui->closeBehaviorCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, [this](int index) {
+                ConfigManager* config = ConfigManager::getInstance();
+                config->setCloseBehavior(index);
+                config->saveConfig();
+            });
+
+    // 注册截图热键 (Ctrl+Shift+S)
+    registerScreenshotHotkey();
+
+    // 设置系统托盘
+    setupSystemTray();
+
+    // 加载配置到UI
+    loadConfigToUI();
 
         // 初始化UI状态
         updateUIState(false);
 
-        // 设置科技风样式表
-    QString techStyle = R"(
-        * {
-            background-color: #f5f5f7;
-            color: #1d1d1f;
-            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-        }
+        // 初始化主题选择下拉框
+        ui->themeCombo->setCurrentIndex((int)ThemeManager::getInstance()->getCurrentTheme());
 
-        QMainWindow {
-            background-color: #f5f5f7;
-            border-radius: 10px;
-        }
+        // 初始化截图快捷键设置
+        ConfigManager *configManager = ConfigManager::getInstance();
+        ui->screenshotShortcutEdit->setKeySequence(QKeySequence(configManager->getScreenshotShortcut()));
 
-        QPushButton {
-            background-color: #007aff;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 8px 20px;
-            font-size: 13px;
-            font-weight: 500;
-        }
+        // 设置中央widget
+        QWidget *centralContainer = new QWidget();
+        centralContainer->setLayout(ui->mainLayout);
+        setCentralWidget(centralContainer);
 
-        QPushButton:hover {
-            background-color: #0056cc;
-        }
-
-        QPushButton:pressed {
-            background-color: #0047a3;
-        }
-
-        QLineEdit, QTextEdit {
-            background-color: white;
-            border: 1px solid #c7c7cc;
-            border-radius: 6px;
-            padding: 8px 12px;
-        }
-
-        QLineEdit:focus, QTextEdit:focus {
-            border: 1px solid #007aff;
-            box-shadow: 0 0 0 3px rgba(0,122,255,0.1);
-        }
-
-        QTabBar::tab {
-            padding: 12px 24px;
-            background: transparent;
-            color: #8e8e93;
-        }
-
-        QTabBar::tab:selected {
-            color: #007aff;
-            border-bottom: 3px solid #007aff;
-        }
-    )";
-    
-    // 设置科技风样式表
-    setStyleSheet(techStyle);
+        // 应用当前主题（确保主题正确应用）
+        ThemeManager::getInstance()->applyTheme(ThemeManager::getInstance()->getCurrentTheme());
     
 } catch (const std::exception& e) {
     QString errorMsg = QString("初始化时发生异常: %1").arg(e.what());
@@ -193,13 +143,14 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 MainWindow::~MainWindow() {
+    // 注销截图热键
+    unregisterScreenshotHotkey();
+
     // 停止自动化
     if (automator) {
         automator->stop();
     }
-    
-
-    
+     
     // 关闭日志系统
     Logger::close();
     
@@ -244,15 +195,14 @@ bool MainWindow::loadConfigToUI() {
         // 加载多显示器设置
         ui->multiMonitorCheck->setChecked(config->getMultiMonitorSupport());
         ui->primaryMonitorSpin->setValue(config->getPrimaryMonitorIndex());
-        
-        // 加载图像识别开关设置
-        // 删除了识别方式设置，默认使用图像识别
 
         // 加载选项设置
         ui->topMostCheck->setChecked(config->getWindowTopMost());
         ui->continueOnErrorCheck->setChecked(config->getContinueOnError());
         ui->continueOnTimeoutCheck->setChecked(config->getContinueOnTimeout());
 
+        // 加载悬浮窗设置
+        ui->floatingWindowCheck->setChecked(config->getFloatingWindowVisible());
 
         // 加载问题模式
     ui->questionModeCombo->clear(); // 先清除现有选项，避免重复
@@ -264,10 +214,16 @@ bool MainWindow::loadConfigToUI() {
     // 加载输入方式设置
     int inputMethod = config->getInputMethod();
     if (inputMethod == 0) {
-        ui->keyboardInputRadio->setChecked(true);
+        ui->keyboardInputCheck->setChecked(true);
     } else {
-        ui->pasteInputRadio->setChecked(true);
+        ui->pasteInputCheck->setChecked(true);
     }
+
+    // 加载主题设置
+    ui->themeCombo->setCurrentIndex(config->getTheme());
+
+    // 加载关闭行为设置
+    ui->closeBehaviorCombo->setCurrentIndex(config->getCloseBehavior());
 
     // 初始化图标管理界面
     // 确保图标名称下拉框有正确的选项
@@ -332,8 +288,17 @@ bool MainWindow::saveConfigFromUI() {
         config->setQuestionMode(ui->questionModeCombo->currentIndex());
         
         // 保存输入方式设置
-        int inputMethod = ui->keyboardInputRadio->isChecked() ? 0 : 1;
+        int inputMethod = ui->keyboardInputCheck->isChecked() ? 0 : 1;
         config->setInputMethod(inputMethod);
+
+        // 保存主题设置
+        config->setTheme(ui->themeCombo->currentIndex());
+
+        // 保存关闭行为设置
+        config->setCloseBehavior(ui->closeBehaviorCombo->currentIndex());
+
+        // 保存悬浮窗设置
+        config->setFloatingWindowVisible(ui->floatingWindowCheck->isChecked());
 
         // 保存高级设置
         config->setImageRecognitionThreshold(ui->thresholdSpin->value());
@@ -346,6 +311,7 @@ bool MainWindow::saveConfigFromUI() {
 
         // 保存多显示器设置
         config->setMultiMonitorSupport(ui->multiMonitorCheck->isChecked());
+        config->setPrimaryMonitorIndex(ui->primaryMonitorSpin->value());
         
         // 计算并保存所有识别图标的尺寸到配置文件
         addLogEntry("开始计算并保存识别图标尺寸");
@@ -438,19 +404,21 @@ void MainWindow::updateProgress(int current, int total) {
 
     // 更新进度文本
     ui->progressLabel->setText(QString("进度: %1/%2").arg(current).arg(total));
+
+    // 更新悬浮窗进度
+    if (floatingWindow->isVisible()) {
+        floatingWindow->updateProgress(current, total);
+    }
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
-    // 处理ESC按键，停止自动化
+    // ESC键停止自动化
     if (event->key() == Qt::Key_Escape) {
-        if (automator->getCurrentState() == Automator::Running) {
-            addLogEntry("检测到ESC按键，停止自动化");
-            automator->stop();           
-        }
+        on_stopButton_clicked();
+        return;
     }
-    
-    // 调用父类的按键事件处理函数
-    QMainWindow::keyPressEvent(event);
+
+    QWidget::keyPressEvent(event);
 }
 
 void MainWindow::on_startButton_clicked() {
@@ -491,6 +459,11 @@ void MainWindow::on_startButton_clicked() {
         }
         
         updateUIState(true);
+
+        // 显示悬浮窗
+        floatingWindow->show();
+        floatingWindow->setStatus("运行中");
+
         LOG_INFO("自动问答启动成功");
         addLogEntry("提示：按下ESC键可停止自动化");
     } catch (const std::exception& e) {
@@ -597,15 +570,27 @@ void MainWindow::onAutomationStateChanged(Automator::State state) {
     // 处理自动化状态变化
     QString stateStr;
     switch (state) {
-    case Automator::Idle: stateStr = "空闲"; break;
+    case Automator::Idle:
+        stateStr = "空闲";
+        floatingWindow->hide();
+        break;
     case Automator::Starting: stateStr = "启动中"; break;
     case Automator::Running: stateStr = "运行中"; break;
-    case Automator::Completed: stateStr = "已完成"; break;
-    case Automator::Error: stateStr = "错误"; break;
+    case Automator::Completed:
+        stateStr = "已完成";
+        floatingWindow->hide();
+        break;
+    case Automator::Error:
+        stateStr = "错误";
+        floatingWindow->hide();
+        break;
     default: stateStr = "未知状态"; break;
     }
 
     ui->statusLabel->setText("状态: " + stateStr);
+    if (floatingWindow->isVisible()) {
+        floatingWindow->setStatus(stateStr);
+    }
     addLogEntry("状态变更为: " + stateStr);
 }
 
@@ -1083,7 +1068,6 @@ void MainWindow::updateIconPreview(const QString &path, QLabel *previewLabel) {
 
 
 
-
 void MainWindow::on_iconPathEdit_textChanged(const QString &path) {
     // 图标路径变化时更新选择的图标预览
     updateIconPreview(path, ui->selectedIconPreviewLabel);
@@ -1128,19 +1112,568 @@ MainWindow::InputMethod MainWindow::getCurrentInputMethod() const {
 void MainWindow::setCurrentInputMethod(InputMethod method) {
     ConfigManager* config = ConfigManager::getInstance();
     config->setInputMethod(method == KeyboardInput ? 0 : 1);
-    
+
     // 更新UI
     if (method == KeyboardInput) {
-        ui->keyboardInputRadio->setChecked(true);
+        ui->keyboardInputCheck->setChecked(true);
     } else {
-        ui->pasteInputRadio->setChecked(true);
+        ui->pasteInputCheck->setChecked(true);
     }
 }
 
-bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
-    // 继续处理其他事件
-    return QMainWindow::eventFilter(obj, event);
+void MainWindow::on_keyboardInputCheck_toggled(bool checked) {
+    if (checked) {
+        // 确保只有一个输入方式被选中
+        if (ui->pasteInputCheck->isChecked()) {
+            ui->pasteInputCheck->setChecked(false);
+        }
+        setCurrentInputMethod(KeyboardInput);
+        addLogEntry("输入方式已切换为：模拟键盘逐个输入");
+    }
+}
+
+void MainWindow::on_pasteInputCheck_toggled(bool checked) {
+    if (checked) {
+        // 确保只有一个输入方式被选中
+        if (ui->keyboardInputCheck->isChecked()) {
+            ui->keyboardInputCheck->setChecked(false);
+        }
+        setCurrentInputMethod(PasteInput);
+        addLogEntry("输入方式已切换为：复制粘贴输入");
+    }
 }
 
 
 
+bool MainWindow::eventFilter(QObject *obj, QEvent *event) {
+    // 继续处理其他事件
+    return QWidget::eventFilter(obj, event);
+}
+
+// 截图热键相关方法实现
+void MainWindow::registerScreenshotHotkey() {
+    // 注册全局热键 Ctrl+Shift+S (截图)
+    if (!RegisterHotKey((HWND)winId(), 1, MOD_CONTROL | MOD_SHIFT, 'S')) {
+        LOG_WARNING("注册截图热键失败");
+        addLogEntry("警告：无法注册截图热键 (Ctrl+Shift+S)");
+    } else {
+        LOG_INFO("截图热键已注册: Ctrl+Shift+S");
+        addLogEntry("截图热键已注册: Ctrl+Shift+S");
+    }
+}
+
+void MainWindow::unregisterScreenshotHotkey() {
+    // 注销全局热键
+    UnregisterHotKey((HWND)winId(), 1);
+}
+
+bool MainWindow::nativeEvent(const QByteArray &eventType, void *message, qintptr *result) {
+    Q_UNUSED(result);
+
+    if (eventType == "windows_generic_MSG") {
+        MSG *msg = static_cast<MSG *>(message);
+        if (msg->message == WM_HOTKEY && msg->wParam == 1) {
+            // 截图热键被触发
+            takeScreenshot();
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void MainWindow::takeScreenshot() {
+    try {
+        // 获取屏幕信息
+        QScreen *screen = QGuiApplication::primaryScreen();
+        if (!screen) {
+            LOG_ERROR("无法获取屏幕信息");
+            addLogEntry("截图失败：无法获取屏幕信息");
+            return;
+        }
+
+        // 隐藏主窗口以便截图
+        bool wasVisible = isVisible();
+        if (wasVisible) {
+            hide();
+            QApplication::processEvents(); // 确保窗口隐藏
+        }
+
+        // 捕获屏幕截图
+        QPixmap screenshot = screen->grabWindow(0);
+
+        // 如果主窗口之前是可见的，恢复显示
+        if (wasVisible) {
+            show();
+        }
+
+        if (screenshot.isNull()) {
+            LOG_ERROR("截图失败：无法捕获屏幕内容");
+            addLogEntry("截图失败：无法捕获屏幕内容");
+            return;
+        }
+
+        // 创建区域选择器
+        if (screenshotSelector) {
+            delete screenshotSelector;
+        }
+
+        screenshotSelector = new ScreenshotSelector(screenshot, this);
+
+        // 连接信号
+        connect(screenshotSelector, &ScreenshotSelector::regionSelected, this, [this](const QRect &rect) {
+            // 先隐藏选择器
+            if (screenshotSelector) {
+                screenshotSelector->hide();
+            }
+            processSelectedScreenshot(rect);
+        });
+
+        connect(screenshotSelector, &ScreenshotSelector::cancelled, this, [this]() {
+            addLogEntry("截图已取消");
+            if (screenshotSelector) {
+                screenshotSelector->deleteLater();
+                screenshotSelector = nullptr;
+            }
+        });
+
+        // 显示选择器（非模态）
+        screenshotSelector->show();
+        screenshotSelector->activateWindow();
+        screenshotSelector->raise();
+
+        LOG_INFO("显示截图区域选择器");
+        addLogEntry("请拖拽鼠标选择要截图的区域，按ESC取消");
+
+    } catch (const std::exception& e) {
+        QString errorMsg = QString("截图时发生异常: %1").arg(e.what());
+        LOG_ERROR(errorMsg);
+        addLogEntry(errorMsg);
+    } catch (...) {
+        LOG_ERROR("截图时发生未知异常");
+        addLogEntry("截图时发生未知异常");
+    }
+}
+
+void MainWindow::processSelectedScreenshot(const QRect &selectedRect) {
+    try {
+        if (selectedRect.isEmpty()) {
+            addLogEntry("截图区域无效");
+            return;
+        }
+
+        // 获取选择的截图区域
+        QPixmap selectedScreenshot;
+
+        // 从选择器获取原始截图，然后复制选择的区域
+        if (screenshotSelector) {
+            QPixmap fullScreenshot = screenshotSelector->getScreenshot();
+            if (!fullScreenshot.isNull()) {
+                selectedScreenshot = fullScreenshot.copy(selectedRect);
+            }
+        }
+
+        // 如果获取失败，重新截取全屏
+        if (selectedScreenshot.isNull()) {
+            QScreen *screen = QGuiApplication::primaryScreen();
+            if (screen) {
+                QPixmap fullScreenShot = screen->grabWindow(0);
+                selectedScreenshot = fullScreenShot.copy(selectedRect);
+            }
+        }
+
+        if (selectedScreenshot.isNull()) {
+            LOG_ERROR("无法获取选择的截图区域");
+            addLogEntry("截图失败：无法获取选择的区域");
+            return;
+        }
+
+        // 生成临时文件名用于预览
+        QString tempPath = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
+        QString tempScreenshotPath = tempPath + "/webot_temp_screenshot_" +
+                                    QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss") + ".png";
+
+        // 临时保存用于预览
+        if (selectedScreenshot.save(tempScreenshotPath, "PNG")) {
+            LOG_INFO(QString("截图已捕获，尺寸: %1x%2")
+                    .arg(selectedRect.width())
+                    .arg(selectedRect.height()));
+            addLogEntry(QString("截图已捕获，尺寸: %1x%2")
+                       .arg(selectedRect.width())
+                       .arg(selectedRect.height()));
+
+            // 显示截图预览和操作窗口（不自动保存）
+            showScreenshotPreview(selectedScreenshot, tempScreenshotPath);
+        } else {
+            LOG_ERROR("截图临时保存失败");
+            addLogEntry("截图失败：临时保存出错");
+        }
+
+        // 清理截图选择器
+        if (screenshotSelector) {
+            screenshotSelector->deleteLater();
+            screenshotSelector = nullptr;
+        }
+    } catch (const std::exception& e) {
+        QString errorMsg = QString("处理截图区域时发生异常: %1").arg(e.what());
+        LOG_ERROR(errorMsg);
+        addLogEntry(errorMsg);
+
+        // 清理截图选择器
+        if (screenshotSelector) {
+            screenshotSelector->deleteLater();
+            screenshotSelector = nullptr;
+        }
+    } catch (...) {
+        LOG_ERROR("处理截图区域时发生未知异常");
+        addLogEntry("处理截图区域时发生未知异常");
+
+        // 清理截图选择器
+        if (screenshotSelector) {
+            screenshotSelector->deleteLater();
+            screenshotSelector = nullptr;
+        }
+    }
+}
+
+
+
+// 系统托盘相关方法实现
+void MainWindow::setupSystemTray() {
+    try {
+        // 检查系统托盘是否可用
+        if (!QSystemTrayIcon::isSystemTrayAvailable()) {
+            LOG_WARNING("系统托盘不可用");
+            addLogEntry("警告：系统托盘不可用，最小化到托盘功能将被禁用");
+            return;
+        }
+
+        // 创建托盘菜单
+        trayMenu = new QMenu(this);
+
+        QAction *showAction = trayMenu->addAction("显示主窗口");
+        connect(showAction, &QAction::triggered, this, &MainWindow::showFromTray);
+
+        QAction *hideAction = trayMenu->addAction("隐藏到托盘");
+        connect(hideAction, &QAction::triggered, this, &MainWindow::hideToTray);
+
+        trayMenu->addSeparator();
+
+        QAction *quitAction = trayMenu->addAction("退出");
+        connect(quitAction, &QAction::triggered, this, &QWidget::close);
+
+        // 创建托盘图标
+        trayIcon = new QSystemTrayIcon(this);
+        trayIcon->setIcon(QIcon(":/icons/app_icon.svg"));
+        trayIcon->setToolTip("WeBot - 企业微信自动问答工具");
+        trayIcon->setContextMenu(trayMenu);
+
+        // 连接托盘图标激活信号
+        connect(trayIcon, &QSystemTrayIcon::activated, this, [this](QSystemTrayIcon::ActivationReason reason) {
+            if (reason == QSystemTrayIcon::DoubleClick || reason == QSystemTrayIcon::Trigger) {
+                showFromTray();
+            }
+        });
+
+        // 显示托盘图标
+        trayIcon->show();
+
+        LOG_INFO("系统托盘已设置");
+        addLogEntry("系统托盘功能已启用");
+
+    } catch (const std::exception& e) {
+        QString errorMsg = QString("设置系统托盘时发生异常: %1").arg(e.what());
+        LOG_ERROR(errorMsg);
+        addLogEntry(errorMsg);
+    } catch (...) {
+        LOG_ERROR("设置系统托盘时发生未知异常");
+        addLogEntry("设置系统托盘时发生未知异常");
+    }
+}
+
+void MainWindow::showFromTray() {
+    try {
+        show();
+        activateWindow();
+        raise();
+
+        if (trayIcon) {
+            trayIcon->showMessage("WeBot", "应用程序已恢复", QSystemTrayIcon::Information, 2000);
+        }
+
+        LOG_INFO("从托盘显示主窗口");
+        addLogEntry("从托盘恢复显示主窗口");
+
+    } catch (const std::exception& e) {
+        QString errorMsg = QString("从托盘显示窗口时发生异常: %1").arg(e.what());
+        LOG_ERROR(errorMsg);
+        addLogEntry(errorMsg);
+    } catch (...) {
+        LOG_ERROR("从托盘显示窗口时发生未知异常");
+        addLogEntry("从托盘显示窗口时发生未知异常");
+    }
+}
+
+void MainWindow::hideToTray() {
+    try {
+        hide();
+
+        if (trayIcon) {
+            trayIcon->showMessage("WeBot", "应用程序已最小化到托盘", QSystemTrayIcon::Information, 2000);
+        }
+
+        LOG_INFO("隐藏主窗口到托盘");
+        addLogEntry("主窗口已隐藏到系统托盘");
+
+    } catch (const std::exception& e) {
+        QString errorMsg = QString("隐藏窗口到托盘时发生异常: %1").arg(e.what());
+        LOG_ERROR(errorMsg);
+        addLogEntry(errorMsg);
+    } catch (...) {
+        LOG_ERROR("隐藏窗口到托盘时发生未知异常");
+        addLogEntry("隐藏窗口到托盘时发生未知异常");
+    }
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+    try {
+        // 根据配置的关闭行为决定是隐藏到托盘还是直接关闭
+        ConfigManager* config = ConfigManager::getInstance();
+        int closeBehavior = config->getCloseBehavior();
+
+        if (closeBehavior == ConfigManager::MinimizeToTray) {
+            // 最小化到系统托盘
+            if (trayIcon && trayIcon->isVisible()) {
+                event->ignore();
+                hideToTray();
+                return;
+            }
+        }
+
+        // 直接关闭或托盘不可用
+        event->accept();
+
+    } catch (const std::exception& e) {
+        QString errorMsg = QString("关闭事件处理异常: %1").arg(e.what());
+        LOG_ERROR(errorMsg);
+        // 确保应用程序能正常关闭
+        event->accept();
+    } catch (...) {
+        LOG_ERROR("关闭事件处理未知异常");
+        event->accept();
+    }
+}
+
+void MainWindow::openImageEditor(const QString &filePath, const QPixmap &) {
+    try {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
+        addLogEntry("已使用系统默认程序打开截图文件");
+        addLogEntry("您可以使用系统自带的画图工具或其他图片编辑软件对截图进行编辑和标注");
+        
+        QTimer::singleShot(2000, this, [this]() {
+            QMessageBox::information(this, "编辑提示", 
+                "截图文件已在默认程序中打开\n\n"
+                "您可以使用以下工具进行编辑：\n"
+                "• Windows画图 - 基础编辑和标注\n"
+                "• Paint 3D - 3D绘图工具\n"
+                "• Photoshop - 专业图片编辑\n"
+                "• GIMP - 免费开源编辑器\n\n"
+                "• 在线工具 - 如Canva、Fotor等");
+        });
+        
+    } catch (const std::exception& e) {
+        QString errorMsg = QString("打开图片编辑器时发生异常: %1").arg(e.what());
+        LOG_ERROR(errorMsg);
+        addLogEntry(errorMsg);
+    } catch (...) {
+        LOG_ERROR("打开图片编辑器时发生未知异常");
+        addLogEntry("打开图片编辑器时发生未知异常");
+    }
+}
+
+void MainWindow::showScreenshotPreview(const QPixmap &screenshot, const QString &filePath) {
+    try {
+        QDialog *previewDialog = new QDialog(this);
+        previewDialog->setWindowTitle("截图预览");
+        previewDialog->setModal(true);
+        previewDialog->resize(900, 700);
+
+        QVBoxLayout *layout = new QVBoxLayout(previewDialog);
+
+        QLabel *imageLabel = new QLabel(previewDialog);
+        imageLabel->setPixmap(screenshot.scaled(previewDialog->size() * 0.7, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        imageLabel->setAlignment(Qt::AlignCenter);
+        layout->addWidget(imageLabel);
+
+        QLabel *infoLabel = new QLabel(QString("截图预览\n尺寸: %1x%2\n\n请选择操作：")
+                                      .arg(screenshot.width())
+                                      .arg(screenshot.height()), previewDialog);
+        infoLabel->setWordWrap(true);
+        infoLabel->setAlignment(Qt::AlignCenter);
+        layout->addWidget(infoLabel);
+
+        QHBoxLayout *buttonLayout = new QHBoxLayout();
+        buttonLayout->setSpacing(10);
+
+        QPushButton *copyButton = new QPushButton("📋 复制到剪贴板", previewDialog);
+        copyButton->setMinimumSize(120, 40);
+        connect(copyButton, &QPushButton::clicked, this, [this, screenshot]() {
+            QApplication::clipboard()->setPixmap(screenshot);
+            QMessageBox::information(this, "成功", "截图已复制到剪贴板");
+        });
+        buttonLayout->addWidget(copyButton);
+
+        QPushButton *saveButton = new QPushButton("💾 保存截图", previewDialog);
+        saveButton->setMinimumSize(120, 40);
+        connect(saveButton, &QPushButton::clicked, this, [this, filePath]() {
+            QString savePath = QFileDialog::getSaveFileName(this, "保存截图", "",
+                                                           "PNG文件 (*.png);;JPEG文件 (*.jpg);;BMP文件 (*.bmp);;所有文件 (*.*)");
+            if (!savePath.isEmpty()) {
+                QFile::copy(filePath, savePath);
+                QMessageBox::information(this, "保存成功", "截图已保存到: " + savePath);
+            }
+        });
+        buttonLayout->addWidget(saveButton);
+
+        QPushButton *editButton = new QPushButton("🎨 编辑截图", previewDialog);
+        editButton->setMinimumSize(120, 40);
+        connect(editButton, &QPushButton::clicked, this, [this, filePath, screenshot]() {
+            openImageEditor(filePath, screenshot);
+        });
+        buttonLayout->addWidget(editButton);
+
+        QPushButton *newScreenshotButton = new QPushButton("✂️ 重新截图", previewDialog);
+        newScreenshotButton->setMinimumSize(120, 40);
+        connect(newScreenshotButton, &QPushButton::clicked, this, [this, previewDialog]() {
+            previewDialog->accept();
+            takeScreenshot();
+        });
+        buttonLayout->addWidget(newScreenshotButton);
+
+        QPushButton *closeButton = new QPushButton("关闭", previewDialog);
+        closeButton->setMinimumSize(100, 40);
+        connect(closeButton, &QPushButton::clicked, previewDialog, &QDialog::accept);
+        buttonLayout->addWidget(closeButton);
+
+        layout->addLayout(buttonLayout);
+
+        previewDialog->exec();
+        delete previewDialog;
+
+    } catch (const std::exception& e) {
+        QString errorMsg = QString("显示截图预览时发生异常: %1").arg(e.what());
+        LOG_ERROR(errorMsg);
+        addLogEntry(errorMsg);
+    } catch (...) {
+        LOG_ERROR("显示截图预览时发生未知异常");
+        addLogEntry("显示截图预览时发生未知异常");
+    }
+}
+
+void MainWindow::on_themeCombo_currentIndexChanged(int index) {
+    try {
+        ThemeManager *themeManager = ThemeManager::getInstance();
+
+        switch (index) {
+        case 0: // 浅色主题
+            themeManager->setTheme(ThemeManager::LightTheme);
+            break;
+        case 1: // 深色主题
+            themeManager->setTheme(ThemeManager::DarkTheme);
+            break;
+        case 2: // 科技主题
+            themeManager->setTheme(ThemeManager::TechTheme);
+            break;
+        case 3: // 樱花主题
+            themeManager->setTheme(ThemeManager::SakuraTheme);
+            break;
+        case 4: // 暖色主题
+            themeManager->setTheme(ThemeManager::WarmTheme);
+            break;
+        default:
+            themeManager->setTheme(ThemeManager::TechTheme);
+            break;
+        }
+
+        addLogEntry(QString("界面主题已切换为: %1").arg(themeManager->getThemeName(themeManager->getCurrentTheme())));
+
+    } catch (const std::exception& e) {
+        QString errorMsg = QString("切换主题时发生异常: %1").arg(e.what());
+        LOG_ERROR(errorMsg);
+        addLogEntry(errorMsg);
+    } catch (...) {
+        LOG_ERROR("切换主题时发生未知异常");
+        addLogEntry("切换主题时发生未知异常");
+    }
+}
+
+void MainWindow::on_applyShortcutButton_clicked() {
+    try {
+        if (ui->screenshotShortcutEdit) {
+            QKeySequence keySequence = ui->screenshotShortcutEdit->keySequence();
+            if (!keySequence.isEmpty()) {
+                // 保存到配置管理器
+                ConfigManager *config = ConfigManager::getInstance();
+                config->setScreenshotShortcut(keySequence.toString());
+
+                // 注销旧的快捷键
+                unregisterScreenshotHotkey();
+
+                // 注册新的快捷键
+                QString shortcutStr = keySequence.toString();
+                addLogEntry(QString("正在设置截图快捷键: %1").arg(shortcutStr));
+
+                // 这里需要解析快捷键并注册
+                // 暂时只支持Ctrl+Shift+S，未来可以扩展支持更多组合键
+                if (shortcutStr == "Ctrl+Shift+S") {
+                    registerScreenshotHotkey();
+                    addLogEntry("截图快捷键设置成功: Ctrl+Shift+S");
+                } else {
+                    addLogEntry("当前只支持 Ctrl+Shift+S 快捷键，其他组合键将在后续版本中支持");
+                }
+            } else {
+                addLogEntry("快捷键设置失败：请输入有效的快捷键组合");
+            }
+        }
+    } catch (const std::exception& e) {
+        QString errorMsg = QString("设置快捷键时发生异常: %1").arg(e.what());
+        LOG_ERROR(errorMsg);
+        addLogEntry(errorMsg);
+    } catch (...) {
+        LOG_ERROR("设置快捷键时发生未知异常");
+        addLogEntry("设置快捷键时发生未知异常");
+    }
+}
+
+void MainWindow::resizeEvent(QResizeEvent *event)
+{
+    QWidget::resizeEvent(event);
+    
+    // 调整控件大小以适应窗口大小
+    if (ui->tabWidget) {
+        int margin = 10;
+        int newWidth = width() - margin * 2;
+        
+        // 遍历所有标签页，调整GroupBox宽度
+        for (int i = 0; i < ui->tabWidget->count(); ++i) {
+            QWidget *tab = ui->tabWidget->widget(i);
+            if (tab) {
+                // 查找所有GroupBox并调整大小
+                QList<QGroupBox*> groupBoxes = tab->findChildren<QGroupBox*>();
+                for (QGroupBox *groupBox : groupBoxes) {
+                    QRect geometry = groupBox->geometry();
+                    geometry.setWidth(newWidth);
+                    groupBox->setGeometry(geometry);
+                }
+                
+                // 调整titleLabel
+                QLabel *titleLabel = tab->findChild<QLabel*>("titleLabel");
+                if (titleLabel) {
+                    QRect geometry = titleLabel->geometry();
+                    geometry.setWidth(newWidth);
+                    titleLabel->setGeometry(geometry);
+                }
+            }
+        }
+    }
+}

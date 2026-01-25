@@ -41,13 +41,13 @@ template <> constexpr inline auto ClickCaptureWidget::qt_create_metaobjectdata<q
         "ClickCaptureWidget",
         "mouseClicked",
         "",
-        "QPoint",
+        "QPointF",
         "pos"
     };
 
     QtMocHelpers::UintData qt_methods {
         // Signal 'mouseClicked'
-        QtMocHelpers::SignalData<void(const QPoint &)>(1, 2, QMC::AccessPublic, QMetaType::Void, {{
+        QtMocHelpers::SignalData<void(const QPointF &)>(1, 2, QMC::AccessPublic, QMetaType::Void, {{
             { 0x80000000 | 3, 4 },
         }}),
     };
@@ -73,12 +73,12 @@ void ClickCaptureWidget::qt_static_metacall(QObject *_o, QMetaObject::Call _c, i
     auto *_t = static_cast<ClickCaptureWidget *>(_o);
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
-        case 0: _t->mouseClicked((*reinterpret_cast<std::add_pointer_t<QPoint>>(_a[1]))); break;
+        case 0: _t->mouseClicked((*reinterpret_cast<std::add_pointer_t<QPointF>>(_a[1]))); break;
         default: ;
         }
     }
     if (_c == QMetaObject::IndexOfMethod) {
-        if (QtMocHelpers::indexOfMethod<void (ClickCaptureWidget::*)(const QPoint & )>(_a, &ClickCaptureWidget::mouseClicked, 0))
+        if (QtMocHelpers::indexOfMethod<void (ClickCaptureWidget::*)(const QPointF & )>(_a, &ClickCaptureWidget::mouseClicked, 0))
             return;
     }
 }
@@ -115,7 +115,7 @@ int ClickCaptureWidget::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 }
 
 // SIGNAL 0
-void ClickCaptureWidget::mouseClicked(const QPoint & _t1)
+void ClickCaptureWidget::mouseClicked(const QPointF & _t1)
 {
     QMetaObject::activate<void>(this, &staticMetaObject, 0, nullptr, _t1);
 }

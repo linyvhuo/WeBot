@@ -2,7 +2,9 @@
     <qresource prefix="/templates">
         <file>templates/MindSpark_logo.png</file>
     </qresource>
-    <qresource prefix="/icons"/>
+    <qresource prefix="/icons">
+        <!-- 图标文件将在这里添加 -->
+    </qresource>
     <qresource prefix="/">
         <file>icons/app_icon.svg</file>
     </qresource>

@@ -237,7 +237,6 @@
 #define __DEC128_MIN_EXP__ (-6142)
 #define __DEC128_MAX__ 9.999999999999999999999999999999999E6144DL
 #define __INT_FAST32_TYPE__ int
-#define __SIZEOF_INT128__ 16
 #define __UINT_LEAST16_TYPE__ short unsigned int
 #define __DEC128_MAX_EXP__ 6145
 #define __DBL_HAS_DENORM__ 1
@@ -371,6 +370,7 @@
 #define __FLT32X_MAX_10_EXP__ 308
 #define __cpp_namespace_attributes 201411L
 #define __WIN32 1
+#define __SIZEOF_INT128__ 16
 #define __FLT16_MIN__ 6.10351562500000000000000000000000000e-5F16
 #define __FLT64X_IS_IEC_60559__ 1
 #define __WCHAR_UNSIGNED__ 1

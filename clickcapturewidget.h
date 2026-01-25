@@ -3,23 +3,28 @@
 
 #include <QWidget>
 #include <QMouseEvent>
+#include "thememanager.h"
 
 class ClickCaptureWidget : public QWidget
 {
     Q_OBJECT
 public:
     explicit ClickCaptureWidget(QWidget *parent = nullptr);
-    
+
 protected:
     void mousePressEvent(QMouseEvent *event) override;
     void paintEvent(QPaintEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
-    
+
 signals:
-    void mouseClicked(const QPoint &pos);
-    
+    void mouseClicked(const QPointF &pos);
+
 private:
-    QPoint m_clickedPos;
+    void onThemeChanged(ThemeManager::Theme theme);
+    QColor getThemeColor() const;
+
+    QPointF m_clickedPos;
+    ThemeManager::Theme m_currentTheme;
 };
 
 #endif // CLICKCAPTUREWIDGET_H
